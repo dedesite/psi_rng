@@ -1,0 +1,24 @@
+Pour chaque déplacement, on choisit au hasard :
+
+- Le sens de rotation : sens des aiguilles d'une montre ou inverse (boolean)
+- L'angle de rotation : int entre 1 et 100 (cran de 3,6°)
+- La direction : avant ou arrière (boolean)
+- Distance parcourue : 0 à 10cm déterminée au hasard
+- Les amplitudes des distances parcourues sont aléatoires, réparties selon une loi de Poisson autour d'une moyenne choisie parmis 4 valeurs possibles : 1.04cm, 2.08cm, 4.16cm ou 8.32cm
+
+Valeurs fixes (définit par l'utilisateur) :
+
+- Vitesse : 1cm/s, 2cm/s, 4cm/s, 8cm/s
+- Temps de pause : 0.1s, 0.8s, 1.6s, 3.2s
+
+Description d'un déplacement :
+- Rotation (angle et sens)
+- Pause
+- Déplacement rectiligne (distance, direction et vitesse)
+- Pause
+- Nouveau déplacement
+
+API (s'assurer qu'on est bien dans un autre thread que le rendu):
+- qrand_bool(delay = 100ms);
+- qrand_int(min = 0, max = 100, delay = 100ms);
+
