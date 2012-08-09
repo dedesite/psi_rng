@@ -16,8 +16,8 @@
 #define ASCII_BOOL 2
 
 /***  Configure the RNG **************/
-int bias_removal = EXCLUSIVE_OR;
-int output_format = ASCII_BYTE;//BINARY;
+int bias_removal = NO_BIAS_REMOVAL;
+int output_format = BINARY;
 int baud_rate = 19200;
 /*************************************/
 
@@ -108,10 +108,10 @@ void buildByte(boolean input){
   byte_counter %= 8;
   if(byte_counter == 0){
     if (output_format == ASCII_BYTE) Serial.println(out, DEC);
-    if (output_format == BINARY) Serial.print(out, BIN);
+    if (output_format == BINARY) Serial.write(out);
+    if (output_format == ASCII_BOOL) Serial.print(out, BIN);
     out = 0;  
   }
-  if (output_format == ASCII_BOOL) Serial.print(input, DEC);
 }
 
 

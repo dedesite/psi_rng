@@ -17,7 +17,7 @@ void setup() {
   f = createFont("Arial", 16, true);
   println(Serial.list());
   // Using the first available port (might be different on your computer)
-  Serial port = new Serial(this, Serial.list()[0], 115200);
+  Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
  
   // An array of random values
   vals = new float[width];
@@ -77,11 +77,12 @@ int nb_bytes = 0;
 // Called whenever there is something available to read
 void serialEvent(Serial port) {
   int val = port.read();
-  if(val == 0){
+  println(val);
+  /*if(val == 0){
     println("Youpi = " + nb_bytes);
     println(val);
     nb_bytes = 0;
-  }
+  }*/
   nb_bytes++;
   byte b = byte(val);
   

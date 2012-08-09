@@ -217,7 +217,7 @@ void setup(){
   chicken.resize(30, 30);
   
   // Using the first available port (might be different on your computer)
-  Serial port = new Serial(this, Serial.list()[0], 115200);
+  Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
   
   rng = new Rng();
   rng.start_homogeneity_test();
