@@ -224,7 +224,8 @@ int last_time;
 boolean experiment_ended = false;
 //in milliseconds
 final int EXPERIMENT_DURATION = 5*60*1000;
-
+//Will be usefull to save logs and traces
+int experiment_num = 0;
 
 void setup(){
   size(800, 600);
@@ -248,15 +249,18 @@ void setup(){
   start_time = millis();
 }
 
+//Find an available log name
+//The first time, find the experiment number
+//And then reuse it for all the others files
+//This all the files has the same number (except if it already exists)
 String find_log_name(String name){
-  int num = 0;
-  String filename = dataPath(num+"_"+name);
+  String filename = dataPath(experiment_num+"_"+name);
   File file = new File(filename);
   while (file.exists())
   {
-    filename = dataPath(num+"_"+name);
+    experiment_num++;
+    filename = dataPath(experiment_num+"_"+name);
     file = new File(filename);
-    num++;
   }
   
   return filename;
@@ -290,15 +294,20 @@ void draw(){
 }
 
 void finish_experiment(){
+  println("Closing application...");
+  String img_name = find_log_name("robot_hazard.tif");
+  println("Save robot traces to : " + img_name);
+  save(img_name); //Write the robot trace to a file
   output.flush(); // Writes the remaining data to the file
   output.close(); // Finishes the file
-  saveFrame("robot_hazard-###.tif"); //Write the robot trace to a file
   exit(); // Stops the program
 }
 
 void keyPressed(){
   if(key == ESC){
-    finish_experiment();
+    experiment_ended = true;
+    //overriding escape behaviour
+    key = 0;
   }
 }
 // Called whenever there is something available to read
