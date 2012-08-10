@@ -35,6 +35,8 @@ class Tychoscope{
   
   int last_state_time;
   
+  int sample_count=0;
+  
   Tychoscope(){
     pos_x = width/2;
     pos_y = height/2;
@@ -70,20 +72,24 @@ class Tychoscope{
         random_clockwise = rng.qrand_boolean();
         //random_angle = random(0, 360);
         random_angle = rng.qrand_number(1, 100) * 3.6;
-        if(!random_clockwise){
-          random_angle = -random_angle;
-        }
         //random_forward = random(0,1) > 0.5;
         random_forward = rng.qrand_boolean();
         //random_distance = int(random(20, 100));
         random_distance = rng.qrand_number(20, 100);
         
-        println("Angle : " + random_angle);
+        /*println("Angle : " + random_angle);
         println("Sens des aiguilles d'une montre ? " + random_clockwise);
         println("En avant ? " + random_forward);
         println("Distance : " + random_distance);
-        println("----------------------------------------------");
+        println("----------------------------------------------");*/
+        output.println(sample_count+","+random_angle+","+random_clockwise+","+random_forward+","+random_distance);
         
+        //Do this after the print
+        if(!random_clockwise){
+          random_angle = -random_angle;
+        }        
+        
+        sample_count++;
         last_state_time = millis();
         state = ROTATING;
         break;
@@ -192,22 +198,33 @@ class Tychoscope{
       fill(col);
     }
     
-    ellipse(pos_x, pos_y, circle_size, circle_size);
-
-    float x1 = pos_x + circle_radius * cos(radians(current_angle));
-    float y1 = pos_y + circle_radius * sin(radians(current_angle));
-    float x2 = pos_x - circle_radius * cos(radians(current_angle));
-    float y2 = pos_y - circle_radius * sin(radians(current_angle));
-    line(x1, y1, x2, y2);
-    fill(color(255, 0, 0));
-    ellipse(x1, y1, 4, 4);
+    if(!experiment_ended){
+      //Robot circle
+      ellipse(pos_x, pos_y, circle_size, circle_size);
+      //Angle line position
+      float x1 = pos_x + circle_radius * cos(radians(current_angle));
+      float y1 = pos_y + circle_radius * sin(radians(current_angle));
+      float x2 = pos_x - circle_radius * cos(radians(current_angle));
+      float y2 = pos_y - circle_radius * sin(radians(current_angle));
+      line(x1, y1, x2, y2);
+      //Robot "nose"
+      fill(color(255, 0, 0));
+      ellipse(x1, y1, 4, 4);
+    }
   }
 }
 
 Tychoscope t;
 PImage chicken;
 PFont f;
+PrintWriter output;
 Rng rng;
+int start_time;
+int last_time;
+boolean experiment_ended = false;
+//in milliseconds
+final int EXPERIMENT_DURATION = 5*60*1000;
+
 
 void setup(){
   size(800, 600);
@@ -219,25 +236,71 @@ void setup(){
   // Using the first available port (might be different on your computer)
   Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
   
-  rng = new Rng();
+  rng = new Rng(50, 100);
   rng.start_homogeneity_test();
+  
+  String log_name = find_log_name("robot_hazard.csv");
+  output = createWriter(log_name);
+  println("log will be store at : " + log_name);
+  //Write csv header
+  output.println("sample,angle,clockwise?,forward?,distance");
+  //Needed to stop automatically the experiment
+  start_time = millis();
+}
+
+String find_log_name(String name){
+  int num = 0;
+  String filename = dataPath(num+"_"+name);
+  File file = new File(filename);
+  while (file.exists())
+  {
+    filename = dataPath(num+"_"+name);
+    file = new File(filename);
+    num++;
+  }
+  
+  return filename;
 }
 
 void draw(){
   background (255);
-  //t.display();
-  
-  if(!rng.is_ready()){
-    textFont(f,20);
-    fill(0);
-    textAlign(CENTER, CENTER);
-    text("Generating random numbers pool... ", width/2, height/2);
+  last_time = millis();
+  if(last_time - start_time >= EXPERIMENT_DURATION){
+    experiment_ended = true;
   }
-  else{
-    image(chicken, 0, 0);
+  
+  t.display();
+  //Don't display anything if experiment ended
+  //In order to be able to shoot the lines
+  if(!experiment_ended){
+    if(!rng.is_ready()){
+      textFont(f,20);
+      fill(0);
+      textAlign(CENTER, CENTER);
+      text("Generating random numbers pool... ", width/2, height/2);
+    }
+    else{
+      image(chicken, 0, 0);
+    }
+  }
+  
+  if(experiment_ended){
+    finish_experiment();
   }
 }
 
+void finish_experiment(){
+  output.flush(); // Writes the remaining data to the file
+  output.close(); // Finishes the file
+  saveFrame("robot_hazard-###.tif"); //Write the robot trace to a file
+  exit(); // Stops the program
+}
+
+void keyPressed(){
+  if(key == ESC){
+    finish_experiment();
+  }
+}
 // Called whenever there is something available to read
 void serialEvent(Serial port) {
   rng.number_recieved(port.read());

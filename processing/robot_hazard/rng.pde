@@ -154,12 +154,13 @@ class Rng{
       test_homogeneity = false;
       //write result to a csv file
       String[] report = new String[257];
-      report[0] = "number, occurence";
+      report[0] = "number,occurence";
       for(int i = 0 ; i < homogeneity_bytes.length; i++){
         report[i+1] = i + "," + homogeneity_bytes[i];
       }
       println("Save results into a file...");
-      saveStrings("homogeneity_test.csv", report);
+      String report_name = find_log_name("homogeneity_test.csv");
+      saveStrings(report_name, report);
       println("Test finish");
     }
   }
