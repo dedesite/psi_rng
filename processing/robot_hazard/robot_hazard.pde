@@ -216,6 +216,10 @@ class Tychoscope{
 
 Tychoscope t;
 PImage chicken;
+//Image which will be displayed at the 2 extrem corners
+//One pleasant to look and one very unpleasant
+PImage good_image;
+PImage bad_image;
 PFont f;
 PrintWriter output;
 Rng rng;
@@ -223,16 +227,19 @@ int start_time;
 int last_time;
 boolean experiment_ended = false;
 //in milliseconds
-final int EXPERIMENT_DURATION = 5*60*1000;
+final int EXPERIMENT_DURATION = 2*60*1000;
 //Will be usefull to save logs and traces
 int experiment_num = 0;
 
 void setup(){
-  size(800, 600);
+  size(screen.width, screen.height);
   f = createFont("Arial", 20, true);
   t = new Tychoscope();
   chicken = loadImage("baby_chicken.jpg");
   chicken.resize(30, 30);
+  
+  good_image = loadImage("sea.jpg");
+  bad_image = loadImage("brain_2.jpg");
   
   // Using the first available port (might be different on your computer)
   Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
@@ -284,7 +291,20 @@ void draw(){
       text("Generating random numbers pool... ", width/2, height/2);
     }
     else{
-      image(chicken, 0, 0);
+      /*
+      //Test de l'affichage de noms a forte conotation
+      textAlign(LEFT);
+      textFont(f,20);
+      fill(0);      
+      text("Gandhi", 10, height - 10);
+      textAlign(RIGHT);
+      text("Hitler", width - 10, 20);
+      */
+      //image(chicken, 0, 0);
+      
+      //Test de l'affichage d'image à forte conotation
+      image(good_image, 0, 0, screen.width / 2, screen.height / 2);
+      image(bad_image, screen.width / 2, screen.height / 2, screen.width / 2, screen.height / 2);
     }
   }
   
