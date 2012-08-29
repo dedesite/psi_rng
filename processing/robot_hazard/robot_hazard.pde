@@ -215,7 +215,7 @@ class Tychoscope{
 }
 
 Tychoscope t;
-PImage chicken;
+//PImage chicken;
 //Image which will be displayed at the 2 extrem corners
 //One pleasant to look and one very unpleasant
 PImage good_image;
@@ -228,21 +228,27 @@ int last_time;
 boolean experiment_ended = false;
 //in milliseconds
 final int EXPERIMENT_DURATION = 2*60*1000;
+final int NB_EXPERIMENTS = 20;
 //Will be usefull to save logs and traces
 int experiment_num = 0;
+int current_xp_num = 0;
+boolean first_setup = true;
 
 void setup(){
   size(screen.width, screen.height);
   f = createFont("Arial", 20, true);
   t = new Tychoscope();
-  chicken = loadImage("baby_chicken.jpg");
-  chicken.resize(30, 30);
+  /*chicken = loadImage("baby_chicken.jpg");
+  chicken.resize(30, 30);*/
   
-  good_image = loadImage("sea.jpg");
-  bad_image = loadImage("brain_2.jpg");
+  /*good_image = loadImage("forest.jpg");
+  bad_image = loadImage("brain.jpg");*/
   
-  // Using the first available port (might be different on your computer)
-  Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
+  if(first_setup){
+    // Using the first available port (might be different on your computer)
+    Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
+    first_setup = false;
+  }
   
   rng = new Rng(50, 100);
   rng.start_homogeneity_test();
@@ -254,6 +260,10 @@ void setup(){
   output.println("sample,angle,clockwise?,forward?,distance");
   //Needed to stop automatically the experiment
   start_time = millis();
+  
+  experiment_ended = false;
+  
+  current_xp_num++;
 }
 
 //Find an available log name
@@ -280,11 +290,10 @@ void draw(){
     experiment_ended = true;
   }
   
-  t.display();
   //Don't display anything if experiment ended
   //In order to be able to shoot the lines
   if(!experiment_ended){
-    if(!rng.is_ready()){
+    if(!rng.is_ready()){      
       textFont(f,20);
       fill(0);
       textAlign(CENTER, CENTER);
@@ -303,10 +312,12 @@ void draw(){
       //image(chicken, 0, 0);
       
       //Test de l'affichage d'image à forte conotation
-      image(good_image, 0, 0, screen.width / 2, screen.height / 2);
-      image(bad_image, screen.width / 2, screen.height / 2, screen.width / 2, screen.height / 2);
+      /*image(good_image, 0, 0, screen.width / 2, screen.height / 2);
+      image(bad_image, screen.width / 2, screen.height / 2, screen.width / 2, screen.height / 2);*/
     }
   }
+  
+  t.display();
   
   if(experiment_ended){
     finish_experiment();
@@ -320,7 +331,14 @@ void finish_experiment(){
   save(img_name); //Write the robot trace to a file
   output.flush(); // Writes the remaining data to the file
   output.close(); // Finishes the file
-  exit(); // Stops the program
+  
+  //We can automatically launch sevral experiments
+  if(current_xp_num == NB_EXPERIMENTS){
+    exit(); // Stops the program
+  }
+  else{
+    setup();
+  }
 }
 
 void keyPressed(){

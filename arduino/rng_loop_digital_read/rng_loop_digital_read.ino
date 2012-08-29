@@ -1,5 +1,5 @@
 int previous_state = 0;
-int pin = 2;
+int pin = 0;
 boolean heads_or_talls = false;
 
 void setup() {
