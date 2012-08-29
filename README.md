@@ -16,9 +16,17 @@ I will also create new kinds of experiments, more on this later...
 
 #Code
 
-All code is under GPL V3 licence except original_rng2.ino written by Rob Seward and is under Creative Commons Attribution-NonCommercial 2.5 License.
+All code is under GPL V3 licence except original_rng2.ino written by Rob Seward which is under Creative Commons Attribution-NonCommercial 2.5 License.
 see http://robseward.com/misc/RNG2/ for more details
 
+##Arduino's code
+
+Code that read the random frequency stream and transform it to a random bit stream.
+I tried several technics, for now, only the one from Rob Seward works well.
+
+##Processing code
+
+A bunch of experiments using the rng. Some of them use violents or pornographics images to create an emotional reaction on the subject. I decided not to put thoses photos on the repository but to share links where you can find them.
 
 #Articles
 
