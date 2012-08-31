@@ -80,6 +80,23 @@ class Rng{
     return b;
   }
   
+  //Based on http://stackoverflow.com/questions/1241555/algorithm-to-generate-poisson-and-binomial-random-numbers
+  //Which is based on http://en.wikipedia.org/wiki/Poisson_distribution#Generating_Poisson-distributed_random_variables
+  //I really don't remeber what poisson law is...
+  public int qrand_poisson(double lambda) {
+    double L = Math.exp(-lambda);
+    double p = 1.0;
+    int k = 0;
+  
+    do {
+      k++;
+      p *= float(qrand_number())/100.0;
+    } while (p > L);
+  
+    return k - 1;
+  }
+
+  
   //On définit un byte aléatoirement en prenant celui qui est apparu
   //Le plus souvent parmis les n derniers tirages
   //Peut-être pas la meilleure solution, à voir...

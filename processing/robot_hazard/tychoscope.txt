@@ -22,3 +22,7 @@ API (s'assurer qu'on est bien dans un autre thread que le rendu):
 - qrand_bool(delay = 100ms);
 - qrand_int(min = 0, max = 100, delay = 100ms);
 
+Dimension de l'expérimentation :
+- robot : 8cm de diamètre
+- feuille : 88x59cm
+
