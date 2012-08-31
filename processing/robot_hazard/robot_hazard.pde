@@ -8,12 +8,14 @@ class Tychoscope{
   final int PAUSE_2 = 4;
   //in cm
   final int ROBOT_DIAMETER = 8;
-  //in cm
+  //in cm possible value in poec'h experiment : 1cm, 2.1cm, 4.2cm ou 8.3cm
   final double AVERAGE_DISTANCE = 2.1;
   //in degrees/sec possible value in poec'h experiment : 18, 36, 72, 144
-  final int ROTATION_SPEED = 144;
+  final int ROTATION_SPEED = 1000;
   //in cm/sec possible value in poec'h experiment : 1, 2, 4, 8
-  final int SPEED = 8;
+  final int SPEED = 16;
+  //in ms possible values in poec'h experiment : 100, 800, 1600, 3200
+  final int PAUSE_DELAY = 10;
   //Necesaire pour l'affichage du tracé du robot
   ArrayList<int []> trail_points;
   
@@ -24,7 +26,6 @@ class Tychoscope{
   color col;
   float current_angle;
   float previous_angle;
-  int pause_delay;
   int circle_size;
   int circle_radius;
   int state;
@@ -56,7 +57,6 @@ class Tychoscope{
     col = color(0, 255, 0);
     current_angle = 0.0;
     previous_angle = 0.0;
-    pause_delay = 100;
     circle_size = ROBOT_DIAMETER * cm_px;
     circle_radius = circle_size / 2;
     distance_px = AVERAGE_DISTANCE * cm_px;
@@ -169,7 +169,7 @@ class Tychoscope{
         }
         break;
       case PAUSE_1:
-        if(state_time >= pause_delay){
+        if(state_time >= PAUSE_DELAY){
           last_state_time = millis();
           state = MOVING;
         }
@@ -199,7 +199,7 @@ class Tychoscope{
         }
         break;
       case PAUSE_2:
-        if(state_time >= pause_delay){
+        if(state_time >= PAUSE_DELAY){
           last_state_time = millis();
           state = NEW_MOVE;
         }
@@ -210,6 +210,14 @@ class Tychoscope{
   }
   
   void display(){
+    //Le robot est désactivé pendant la génération du pool
+    if(!rng.is_ready()){
+      fill(128);
+    }
+    else{
+      move();
+      fill(col);
+    }
     if(!HIDE_ROBOT || experiment_ended){
       fill(0);
       //On affiche le tracé avant le robot comme ça le robot passe par dessus
@@ -218,16 +226,7 @@ class Tychoscope{
         int[] p2 = trail_points.get(i+1);
         line(p1[0], p1[1], p2[0], p2[1]);
       }
-      
-      //Le robot est désactivé pendant la génération du pool
-      if(!rng.is_ready()){
-        fill(128);
-      }
-      else{
-        move();
-        fill(col);
-      }
-      
+        
       if(!experiment_ended){
         //Robot circle
         ellipse(pos_x, pos_y, circle_size, circle_size);
@@ -261,7 +260,7 @@ int last_time;
 int generating_num_time;
 boolean experiment_ended = false;
 //in milliseconds
-final int EXPERIMENT_DURATION = 4*60*1000;
+final int EXPERIMENT_DURATION = 1*60*1000;
 final int NB_EXPERIMENTS = 1;
 //the board dimensions in cm
 final int BOARD_WIDTH = 88;
@@ -272,7 +271,7 @@ int current_xp_num = 0;
 boolean first_setup = true;
 //Size of a centimeter in pixel
 int cm_px;
-final boolean HIDE_ROBOT = false;
+final boolean HIDE_ROBOT = true;
 void setup(){
   //The size of the window must have the same ratio as in the poec'h experiment
   //which is 88/59
