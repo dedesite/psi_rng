@@ -1,6 +1,7 @@
 TODO:
--Faire en sorte que le test d'homogénéité se termine quand on termine l'expérience
--Tester la fonction de Poisson
+
 DONE:
 -Le compteur du temps ne doit pas tourner tant que le robot n'a pas initialisé ses nombres
 -Pouvoir cacher le robot pendant l'expérience
+-Faire en sorte que le test d'homogénéité se termine quand on termine l'expérience
+-Tester la fonction de Poisson
