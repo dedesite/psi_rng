@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<html>
+<head>
+  <title>Hello Web - Processing.js Test</title>
+  <script src="processing-1.4.1.min.js"></script>
+  <script src="socket.io.min.js"></script>
+<script>
+document.onreadystatechange = function () {
+  if (document.readyState == "complete") {
+    var socket = io.connect('http://localhost:8080');
+    socket.on('serial', function (data) {
+        var app = Processing.getInstanceById('sketch');
+        for(var i = 0 ; i < data.length ; i++){
+          app.serialEvent(data[i]);  
+        }
+        //console.log(i, "Numbers recieved");
+      });
+
+    var viewFullScreen = document.getElementById("sketch");
+    if (viewFullScreen) {
+        viewFullScreen.addEventListener("click", function () {
+            var docElm = document.documentElement;
+            if (docElm.requestFullscreen) {
+                docElm.requestFullscreen();
+            }
+            else if (docElm.mozRequestFullScreen) {
+                docElm.mozRequestFullScreen();
+            }
+            else if (docElm.webkitRequestFullScreen) {
+                docElm.webkitRequestFullScreen();
+            }
+        }, false);
+    }
+  }
+}
+</script>
+<style>
+canvas {
+  margin:  0px;
+  padding: 0px;
+}
+</style>
+</head>
+<body>
+  <center><canvas id="sketch" data-processing-sources="robot_hazard.pjs tychoscope.pjs rng.pjs"></canvas></center>
+</body>
+</html>
+

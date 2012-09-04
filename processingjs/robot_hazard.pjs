@@ -1,4 +1,4 @@
-import processing.serial.*;
+//import processing.serial.*;
 
 Tychoscope t;
 //PImage chicken;
@@ -54,18 +54,18 @@ void setup(){
   
   if(first_setup){
     // Using the first available port (might be different on your computer)
-    Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
+    //Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
     first_setup = false;
   }
   
   //rng = new Rng(50, 100);
   rng = new Rng(1000, 1);
-  rng.start_homogeneity_test();
-  String log_name = find_log_name("robot_hazard.csv");
-  output = createWriter(log_name);
-  println("log will be store at : " + log_name);
+  //rng.start_homogeneity_test();
+  //String log_name = find_log_name("robot_hazard.csv");
+  //output = createWriter(log_name);
+  //println("log will be store at : " + log_name);
   //Write csv header
-  output.println("sample,angle,clockwise?,forward?,distance");
+  //output.println("sample,angle,clockwise?,forward?,distance");
   //Needed to stop automatically the experiment
   start_time = millis();
   last_time = start_time;
@@ -80,7 +80,7 @@ void setup(){
 //The first time, find the experiment number
 //And then reuse it for all the others files
 //This all the files has the same number (except if it already exists)
-String find_log_name(String name){
+/*String find_log_name(String name){
   String filename = dataPath(experiment_num+"_"+name);
   File file = new File(filename);
   while (file.exists())
@@ -91,7 +91,7 @@ String find_log_name(String name){
   }
   
   return filename;
-}
+}*/
 
 void draw(){
   background (255);
@@ -139,13 +139,13 @@ void draw(){
 }
 
 void finish_experiment(){
-  println("Closing application...");
+  /*println("Closing application...");
   String img_name = find_log_name("robot_hazard.tif");
   println("Save robot traces to : " + img_name);
   save(img_name); //Write the robot trace to a file
   output.flush(); // Writes the remaining data to the file
   output.close(); // Finishes the file
-  rng.write_homogeneity_test_data();
+  rng.write_homogeneity_test_data();*/
   //We can automatically launch sevral experiments
   if(current_xp_num == NB_EXPERIMENTS){
     exit(); // Stops the program
@@ -164,6 +164,6 @@ void keyPressed(){
   }
 }
 // Called whenever there is something available to read
-void serialEvent(Serial port) {
-  rng.number_recieved(port.read());
+void serialEvent(int num) {
+  rng.number_recieved(num);
 }
