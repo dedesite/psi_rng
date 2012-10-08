@@ -24,6 +24,7 @@ serialPort.on("data", function (data) {
 io.set("log level", 1);
 io.sockets.on('connection', function (socket) {
   //socket.emit('news', { hello: 'world' });
+  //Limit simultaneus connected clients to 1
   if(io.sockets.clients().length == 1){
     console.log("Connection established");
     socket.emit('welcome', {message : "Hello"});
