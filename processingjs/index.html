@@ -8,7 +8,7 @@
 <script>
 document.onreadystatechange = function () {
   if (document.readyState == "complete") {
-    var socket = io.connect('http://localhost:8080');
+    var socket = io.connect("http://" + window.location.hostname + ":8080");
     socket.on('serial', function (data) {
         var app = Processing.getInstanceById('sketch');
         for(var i = 0 ; i < data.length ; i++){
