@@ -48,7 +48,9 @@
 //We write on the fifo file each 20ms
 //NEED TO BE A MULTIPLE OF 8
 #define NSAMPLES      (8*5)
+//In micro seconds
 #define DELAY         500
+#define FIFO_FILE "../rng_fifo"
 
 // GPIO registers address
 #define BCM2708_PERI_BASE  0x20000000
@@ -148,6 +150,12 @@ int main(int argc, char *argv[])
 
 	signal(SIGINT, signal_handler);
 
+	printf("Start Random numbers generation.\n");
+
+    /* Create the FIFO if it does not exist */
+    umask(0);
+    mknod(FIFO_FILE, S_IFIFO|0666, 0);
+
 	while (keep_going) {
 		for (i = 0; i < NSAMPLES; i++) {
 			if (!keep_going)
@@ -178,11 +186,18 @@ int main(int argc, char *argv[])
 			usleep(DELAY);
 		}
 
-		fp = fopen("../rng_fifo", "a");
+		printf("Trying to open Fifo.\n");
+		fp = fopen(FIFO_FILE, "a");
+		printf("After trying to open Fifo.\n");
 		if (fp) {
+			printf("Fifo is open.\n");
 			for (j = 0; j < nb_numbers; j++)
 				fprintf(fp, "%u", samples[j]);
 			fclose(fp);
+			printf("Writing %d numbers", nb_numbers);
+		}
+		else{
+			perror("Open fifo error");
 		}
 
 		nb_numbers = 0;
