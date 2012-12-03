@@ -3,26 +3,28 @@
 
 #define FIFO_FILE       "MYFIFO"
 
-int main(int argc, char *argv[])
+void write_fifo(int value){
+  FILE *fp;
+  if((fp = fopen(FIFO_FILE, "w")) == NULL) {
+    perror("fopen");
+    exit(1);
+  }
+
+  fprintf(fp, "%d", value);
+
+  fclose(fp);
+}
+
+int main(void)
 {
-        FILE *fp;
+  int i;
+  while(1){
+    //in 100ms we can do 200 samples with 500micro seconds of interval 
+    for (i = 0; i < 200*10; i++) {
+      usleep(500);
+    }
 
-        if ( argc != 2 ) {
-                printf("USAGE: fifoclient [string]\n");
-                exit(1);
-        }
-
-        while(1){
-                if((fp = fopen(FIFO_FILE, "a")) == NULL) {
-                        perror("fopen");
-                        exit(1);
-                }
-
-
-                fputs(argv[1], fp);
-
-                fclose(fp);
-                usleep(2500);
-        }
-        return(0);
+    write_fifo(i);
+  }
+  return(0);
 }
