@@ -15,41 +15,44 @@ int main(void)
 {
   FILE *fp;
   char readbuf[80];
-  int nb_times_per_sec = 0;
+  int nb_times = 0;
 
   /* Create the FIFO if it does not exist */
   umask(0);
   mknod(FIFO_FILE, S_IFIFO|0666, 0);
 
-  struct timeval t1, t2, current_time, last_time;
-  long datetime_diff, diff_read = 0;
+  struct timeval t1, t2, current_time, last_time, start_time;
+  long datetime_diff, diff_read, total_diff = 0;
 
   gettimeofday(&last_time, 0);
+  gettimeofday(&start_time, 0);
 
   while(1)
   {
     //Test to read each 1000ms
-    usleep(1000*1000);
+    //usleep(1000*1000);
 
     gettimeofday(&t1, 0);
     fp = fopen(FIFO_FILE, "r");
-    fgets(readbuf, 80, fp);
+    fgets(readbuf, 80, fp);@
     fclose(fp);
     gettimeofday(&t2, 0);
     diff_read += diff_time(&t2, &t1);
 
 
-    nb_times_per_sec++;
+    nb_times++;
 
     gettimeofday(&current_time, 0);
     
     datetime_diff = diff_time(&current_time, &last_time);
+    total_diff = diff_time(&current_time, &start_time);
 
-    if(datetime_diff >= 10000){
+    if(datetime_diff >= 1000){
       //It should be always 10
-      printf("Received %d times in %lums and took %lums to read\n", nb_times_per_sec, datetime_diff, diff_read);
+      long average = total_diff/nb_times;
+      printf("Received each %lums nb_times=%d total_diff=%lu\n", average, nb_times, total_diff);
       gettimeofday(&last_time, 0);
-      nb_times_per_sec = 0;
+      //nb_times = 0;
       diff_read = 0;
     }
   }
