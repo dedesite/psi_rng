@@ -9,7 +9,7 @@
 long NB_SAMPLES = (SAMPLE_DURATION*1000)/THEORIC_SLEEP_INTERVAL;
 
 struct timeval t1, t2;
-long diff=0;
+long diff = 0;
 int nb_times = 0;
 //In micro seconds
 int sleep_interval = THEORIC_SLEEP_INTERVAL;

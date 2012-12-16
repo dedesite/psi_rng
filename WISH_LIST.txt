@@ -1,0 +1,5 @@
+WISH LIST :
+- use mkfifo instead of mknode
+- modify client/server code to work properly with FIFO
+- add message like "Wait for client to connect"
+- Modify code to work with binary data and test if it work in JS

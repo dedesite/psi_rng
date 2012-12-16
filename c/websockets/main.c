@@ -118,13 +118,14 @@ int main(void) {
     // we're not using ssl
     const char *cert_path = NULL;
     const char *key_path = NULL;
+    const char *ca_path = NULL;
     // no special options
     int opts = 0;
     
     // create libwebsocket context representing this server
     context = libwebsocket_create_context(port, interface, protocols,
                                           libwebsocket_internal_extensions,
-                                          cert_path, key_path, -1, -1, opts);
+                                          cert_path, key_path, ca_path, -1, -1, opts);
     
     if (context == NULL) {
         fprintf(stderr, "libwebsocket init failed\n");
@@ -146,8 +147,8 @@ int main(void) {
         //If we got a connected client
         //Send we send him the random numbers each 100ms
         if(connected_client){
-            unsigned char *numbers = read_random_numbers();
-            send_random_numbers(connected_client, numbers);
+            /**unsigned char *numbers = read_random_numbers();
+            send_random_numbers(connected_client, numbers);*/
         }
 
     }

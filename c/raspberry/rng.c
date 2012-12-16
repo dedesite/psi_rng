@@ -34,23 +34,100 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <signal.h>
+
+//In microseconds
+#define THEORETICAL_SLEEP_INTERVAL 500
+//In milliseconds
+#define SAMPLE_DURATION 100
+long NB_SAMPLES = (SAMPLE_DURATION*1000)/THEORETICAL_SLEEP_INTERVAL;
+
+#define FIFO_FILE "../rng_fifo"
+
+
+uint32_t nb_numbers = 0;
+uint32_t adjust_times = 0;
+uint8_t *samples;
+//We store numbers as bytes
+uint8_t current_number = 0;
+//In micro seconds
+int sleep_interval = THEORETICAL_SLEEP_INTERVAL;
+FILE *fp;
+struct timeval t1, t2;
+
+//Return the diff in milliseconds between two timeval struct
+long diff_time(struct timeval *t1, struct timeval *t0 ){
+	return (t1->tv_sec-t0->tv_sec)*1000 + (t1->tv_usec-t0->tv_usec)/1000;
+}
+
+void build_byte(uint32_t bit, uint32_t byte_position){
+	//We build an uint8 number with random bits
+	if(bit){
+		current_number = (current_number << 1) | 0x01;
+	}
+	else{
+		current_number = (current_number << 1);
+	}
+
+	if((byte_position+1) % 8 == 0){
+		samples[nb_numbers] = current_number;
+		current_number=0;
+		nb_numbers++;
+	}
+}
+
+//Send numbers to the websocket server through a fifo
+void send_numbers(){
+	fp = fopen(FIFO_FILE, "w");
+	if (fp) {
+		uint32_t j;
+		for (j = 0; j < nb_numbers; j++)
+			fprintf(fp, "%u", samples[j]);
+		fclose(fp);
+	}
+	else {
+		perror("error opening fifo");
+		exit(1);
+	}
+
+	nb_numbers = 0;
+}
+/**
+As we want to X samples per seconds, we can't just
+do usleep(Y) (when Y represent the exact number in micro seconds between samples)
+cause our algorithm took time to execute so the real
+sample interval will be X+computation_time. So we need to calculate,
+on avarage, what is the cost of our algorithm and substract it to the theoritical sleep interval
+This way we know that we have X samples per second, even if the interval is not always the same.
+*/
+void adjust_sleep_interval(){
+	adjust_times++;
+	if(adjust_times >= 10){
+		gettimeofday(&t2, 0);
+		long diff = diff_time(&t2, &t1);
+		//We expect the code above take 100ms to execute
+		if(diff > SAMPLE_DURATION){
+			//Attention we are in micro second here
+			long diff_micro = (diff - SAMPLE_DURATION) * 1000;
+			long computation_time = (long)(diff_micro / (long)NB_SAMPLES);
+			sleep_interval = THEORETICAL_SLEEP_INTERVAL - computation_time;
+			if(sleep_interval < 0)
+				sleep_interval = 0;
+		}
+		adjust_times = 0;
+	}
+}
 
 //Wether or not we are on a Raspberry, if not use software generated number
 //#define RASPBERRY 1
 
+#ifdef RASPBERRY
 // GPIO Avalanche input
 #define AVALANCHE_IN  4
 #define LED           9
-//We write on the fifo file each 20ms
-//NEED TO BE A MULTIPLE OF 8
-#define NSAMPLES      (8*5)
-//In micro seconds
-#define DELAY         500
-#define FIFO_FILE "../rng_fifo"
 
 // GPIO registers address
 #define BCM2708_PERI_BASE  0x20000000
@@ -69,14 +146,6 @@
 int                mem_fd;
 void              *gpio_map;
 volatile uint32_t *gpio;
-static volatile sig_atomic_t keep_going = 1;
-
-void signal_handler(int sig)
-{
-	keep_going = 0;
-}
-
-#ifdef RASPBERRY
 //
 // Set up a memory regions to access GPIO
 //
@@ -128,79 +197,55 @@ void close_io()
 	}
 }
 #endif
+
 int main(int argc, char *argv[])
 {
-	uint32_t i, j, bit;
-	uint32_t nb_numbers = 0;
-	uint8_t *samples;
-	FILE *fp;
-	//We store numbers as bytes
-	uint8_t current_number = 0;
+	uint32_t bit;
+	uint32_t i;
 
+	printf("Waiting for server to start...\n");
+	fp = fopen(FIFO_FILE, "w");
+	if (fp) {
+		printf("Server started : could start Random numbers generation.\n");
+		fclose(fp);
+	}
+	else {
+		perror("error opening fifo");
+		exit(1);
+	}
 #ifdef RASPBERRY
 	// Setup gpio pointer for direct register access
 	setup_io();
 #endif
 
-	samples = calloc(NSAMPLES/8, sizeof(*samples));
+	samples = calloc(NB_SAMPLES/8, sizeof(*samples));
 	if (!samples) {
 		printf("Error on calloc()\n");
 		exit(1);
 	}
 
-	signal(SIGINT, signal_handler);
 
-	printf("Start Random numbers generation.\n");
-
-    /* Create the FIFO if it does not exist */
-    umask(0);
-    mknod(FIFO_FILE, S_IFIFO|0666, 0);
-
-	while (keep_going) {
-		for (i = 0; i < NSAMPLES; i++) {
-			if (!keep_going)
-				break;
+	while (1) {
+		for (i = 0; i < NB_SAMPLES; i++) {
 #ifdef RASPBERRY
 			bit = GPIO_LEV(AVALANCHE_IN);
-#else
-			bit = rand() % 2;
-#endif
-			if(bit){
-				current_number = (current_number << 1) | 0x01;
-			}
-			else{
-				current_number = (current_number << 1);
-			}
-
-			if((i+1) % 8 == 0){
-				samples[nb_numbers] = current_number;
-				current_number=0;
-				nb_numbers++;
-			}
 /*
 			if (bit)
 				GPIO_SET(LED);
 			else
 				GPIO_CLR(LED);
 */
-			usleep(DELAY);
+#else
+			bit = rand() % 2;
+#endif
+			build_byte(bit, i);
+
+			usleep(sleep_interval);
 		}
 
-		printf("Trying to open Fifo.\n");
-		fp = fopen(FIFO_FILE, "a");
-		printf("After trying to open Fifo.\n");
-		if (fp) {
-			printf("Fifo is open.\n");
-			for (j = 0; j < nb_numbers; j++)
-				fprintf(fp, "%u", samples[j]);
-			fclose(fp);
-			printf("Writing %d numbers", nb_numbers);
-		}
-		else{
-			perror("Open fifo error");
-		}
+		send_numbers();
 
-		nb_numbers = 0;
+		adjust_sleep_interval();
 	}
 
 #ifdef RASPBERRY

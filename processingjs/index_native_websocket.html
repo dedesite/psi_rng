@@ -10,6 +10,7 @@ document.onreadystatechange = function () {
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     var socket = new WebSocket('ws://localhost:8080', 'rng-protocol');
     socket.onmessage = function (message) {
+      console.log("a message : ", message);
       var data = message.data;
       var app = Processing.getInstanceById('sketch');
       for(var i = 0 ; i < data.length ; i++){
