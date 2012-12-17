@@ -9,18 +9,18 @@ document.onreadystatechange = function () {
   if (document.readyState == "complete") {
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     var socket = new WebSocket('ws://localhost:8080', 'rng-protocol');
+    socket.binaryType = "arraybuffer";
     socket.onmessage = function (message) {
-      console.log("a message : ", message.data);
-      /*var data = message.data;
+      var numbers = new Uint8Array(message.data);
+      //console.log("number recieved : ", numbers);
       var app = Processing.getInstanceById('sketch');
-      for(var i = 0 ; i < data.length ; i++){
+      for(var i = 0 ; i < numbers.length ; i++){
         //Simulate serial event for processingjs app
-        app.serialEvent(data[i]);  
-      }*/
+        app.serialEvent(numbers[i]);
+      }
     }
     socket.onopen = function(){
       console.log("Connection open");
-      socket.send("test");  
     }
     
     var viewFullScreen = document.getElementById("sketch");

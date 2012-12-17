@@ -1,4 +1,10 @@
 WISH LIST :
+- make it work on the raspberry pi
+- Test cross domain websocket
+- Remove the canva's margin in chromium
+- Build the electronic device
+- Add a proper log system ? => Maybe log should be done only via client and then save to the server hosting experiments? 
+DONE:
 - use mkfifo instead of mknode
 - modify client/server code to work properly with FIFO
 - add message like "Wait for client to connect"

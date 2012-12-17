@@ -81,11 +81,9 @@ void build_byte(uint32_t bit, uint32_t byte_position){
 
 //Send numbers to the websocket server through a fifo
 void send_numbers(){
-	fp = fopen(FIFO_FILE, "w");
+	fp = fopen(FIFO_FILE, "wb");
 	if (fp) {
-		uint32_t j;
-		for (j = 0; j < nb_numbers; j++)
-			fprintf(fp, "%u;", samples[j]);
+		fwrite(samples, 1, nb_numbers, fp);
 		fclose(fp);
 	}
 	else {

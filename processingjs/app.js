@@ -4,4 +4,6 @@ app.get('/*', function (req, res) {
 	res.sendfile(__dirname + req.originalUrl);
 });
 
-app.listen(3000);
+var port = 3000;
+app.listen(port);
+console.log("Listening on port ", port);
