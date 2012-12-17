@@ -7,7 +7,13 @@ https://gist.github.com/3654228
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <string.h>
+
 #include <libwebsockets.h>
+
+#define FIFO_FILE "../rng_fifo"
+#define MAX_NUMBER_TEXT_SIZE 800
 
 
 //Used to limit the connected client to 1
@@ -45,7 +51,8 @@ static int callback_rng(struct libwebsocket_context * this,
         case LWS_CALLBACK_CLOSED:
             if(connected_client) connected_client = NULL;
             break;
-        case LWS_CALLBACK_RECEIVE: { // the funny part
+        case LWS_CALLBACK_RECEIVE: { 
+            // the funny part
             // create a buffer to hold our response
             // it has to have some pre and post padding. You don't need to care
             // what comes there, libwebsockets will do everything for you. For more info see
@@ -53,6 +60,14 @@ static int callback_rng(struct libwebsocket_context * this,
             unsigned char *buf = (unsigned char*) malloc(LWS_SEND_BUFFER_PRE_PADDING + len +
                                                          LWS_SEND_BUFFER_POST_PADDING);       
             
+            int i;
+            
+            // pointer to `void *in` holds the incomming request
+            // we're just going to put it in reverse order and put it in `buf` with
+            // correct offset. `len` holds length of the request.
+            for (i=0; i < len; i++) {
+                buf[LWS_SEND_BUFFER_PRE_PADDING + (len - 1) - i ] = ((char *) in)[i];
+            }
             // log what we recieved and what we're going to send as a response.
             // that disco syntax `%.*s` is used to print just a part of our buffer
             // http://stackoverflow.com/questions/5189071/print-part-of-char-array
@@ -81,14 +96,23 @@ static int callback_rng(struct libwebsocket_context * this,
  Read the fifo file where random numbers are written and then convert them to a json array
  which can be easilly read in javascript.
 */
-static unsigned char* read_random_numbers(){
 
+static void read_random_numbers(char* numbers){
+    FILE *fp = fopen(FIFO_FILE, "r");
+    if (fp) {
+        numbers = fgets(&numbers[LWS_SEND_BUFFER_PRE_PADDING], 800, fp);
+        printf("Recieving numbers = %s\n", numbers);
+        fclose(fp);
+    }
+    else {
+        perror("error opening fifo");
+        exit(1);
+    }
 }
-
 
 static void send_random_numbers(struct libwebsocket *wsi, unsigned char *numbers){
     //attention a bien avoir la taille du tableau et a ne pas faire de malloc sur le buffer a chaque fois...
-    //libwebsocket_write(wsi, &numbers[LWS_SEND_BUFFER_PRE_PADDING], len, LWS_WRITE_TEXT);
+    libwebsocket_write(wsi, &numbers[LWS_SEND_BUFFER_PRE_PADDING], MAX_NUMBER_TEXT_SIZE, LWS_WRITE_TEXT);
 }
 
 
@@ -131,14 +155,29 @@ int main(void) {
         fprintf(stderr, "libwebsocket init failed\n");
         return -1;
     }
+
+    /* Create the FIFO if it does not exist */
+    umask(0);
+    mkfifo(FIFO_FILE, 0666);
     
-    printf("starting server...\n");
+    printf("Waiting for Random Numbers Generator to start sending numbers...\n");
+    FILE *fp = fopen(FIFO_FILE, "r");
+    if (fp) {
+        printf("Random Numbers Generator started : starting websocket server.\n");
+        fclose(fp);
+    }
+    else {
+        perror("error opening fifo");
+        exit(1);
+    }
+
+    unsigned char numbers[LWS_SEND_BUFFER_PRE_PADDING+MAX_NUMBER_TEXT_SIZE+LWS_SEND_BUFFER_POST_PADDING];
     
     // infinite loop, to end this server send SIGTERM. (CTRL+C)
     while (1) {
         //As we are only listening to the connection
         //We can listen only each 100ms or less
-        libwebsocket_service(context, 100);
+        libwebsocket_service(context, 0);
         // libwebsocket_service will process all waiting events with their
         // callback functions and then wait 100 ms.
         // (this is a single threaded webserver and this will keep our server
@@ -147,8 +186,8 @@ int main(void) {
         //If we got a connected client
         //Send we send him the random numbers each 100ms
         if(connected_client){
-            /**unsigned char *numbers = read_random_numbers();
-            send_random_numbers(connected_client, numbers);*/
+            read_random_numbers((char *)numbers);
+            //send_random_numbers(connected_client, numbers);
         }
 
     }

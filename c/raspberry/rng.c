@@ -85,7 +85,7 @@ void send_numbers(){
 	if (fp) {
 		uint32_t j;
 		for (j = 0; j < nb_numbers; j++)
-			fprintf(fp, "%u", samples[j]);
+			fprintf(fp, "%u;", samples[j]);
 		fclose(fp);
 	}
 	else {
