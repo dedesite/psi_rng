@@ -13,7 +13,7 @@ https://gist.github.com/3654228
 
 #include <libwebsockets.h>
 
-#define FIFO_FILE "../rng_fifo"
+#define FIFO_FILE ".rng_fifo"
 //We sample the chaos 2000 times per second which mean 250bytes / sec
 //and the numbers are send each 100ms so we send 25 bytes each time
 #define MAX_NUMBER_PER_READ 25
@@ -67,7 +67,7 @@ static void read_random_numbers(){
     if (fp) {
         file_size = fread(&numbers[LWS_SEND_BUFFER_PRE_PADDING], 1, MAX_NUMBER_PER_READ, fp);
         if(file_size < MAX_NUMBER_PER_READ){
-            printf("We've got not enough numbers : %zu instead of %d", file_size, MAX_NUMBER_PER_READ);
+            printf("We've got not enough numbers : %zu instead of %d\n", file_size, MAX_NUMBER_PER_READ);
         }
         //printf("Recieving numbers = %s\n", numbers);
         fclose(fp);

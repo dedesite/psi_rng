@@ -8,7 +8,7 @@
 document.onreadystatechange = function () {
   if (document.readyState == "complete") {
     window.WebSocket = window.WebSocket || window.MozWebSocket;
-    var socket = new WebSocket('ws://localhost:8080', 'rng-protocol');
+    var socket = new WebSocket('ws://192.168.0.142:8080', 'rng-protocol');
     socket.binaryType = "arraybuffer";
     socket.onmessage = function (message) {
       var numbers = new Uint8Array(message.data);
