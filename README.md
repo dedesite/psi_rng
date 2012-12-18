@@ -32,7 +32,7 @@ Code espacially made to be run on slow configuration with few RAM and little CPU
 On the raspberry it took only 0.7% of the RAM and 15% of the CPU !
 The first program reads GPIO, generates a stream of byte with the random bits and write them to a FIFO.
 The second program reads the randoms numbers through the FIFO and send them via websockets if a client is connected.
-Note: Look at the README.md in the "c" directory
+Note: Look at the `README.md` in the "c" directory
 
 ## Processing code
 
@@ -55,6 +55,6 @@ I'm not even sure if it's legal to store those articles on github.
 If it's not, please let me know, I'll remove them.
 
 Here is the place where I downloaded them :
-http://www.princeton.edu/~pear/pdfs/
-http://psiland.free.fr/savoirplus/theses/theses.html#RenePeoch
-http://www.scientificexploration.org/journal/jse_22_2_ivtzan.pdf
+*  http://www.princeton.edu/~pear/pdfs/
+*  http://psiland.free.fr/savoirplus/theses/theses.html#RenePeoch
+*  http://www.scientificexploration.org/journal/jse_22_2_ivtzan.pdf
