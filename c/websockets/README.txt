@@ -13,4 +13,4 @@ sudo make install
 sudo ln -s /usr/local/lib/libwebsockets.so /usr/lib/libwebsockets.so.0
 
 The cd to the websockets directory and specify libwebsocket location for compilation :
-gcc -o server main.c /usr/local/lib/libwebsockets.so
+gcc -Wall -O main.c -o server /usr/local/lib/libwebsockets.so

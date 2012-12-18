@@ -102,7 +102,6 @@ on avarage, what is the cost of our algorithm and substract it to the theoritica
 This way we know that we have X samples per second, even if the interval is not always the same.
 */
 void adjust_sleep_interval(){
-	adjust_times++;
 	if(adjust_times >= 10){
 		gettimeofday(&t2, 0);
 		long diff = diff_time(&t2, &t1);
@@ -112,8 +111,10 @@ void adjust_sleep_interval(){
 			long diff_micro = (diff - SAMPLE_DURATION) * 1000;
 			long computation_time = (long)(diff_micro / (long)NB_SAMPLES);
 			sleep_interval = THEORETICAL_SLEEP_INTERVAL - computation_time;
-			if(sleep_interval < 0)
+			if(sleep_interval < 0){
+				printf("Computation time %lu > %d micro seconds\n", computation_time, THEORETICAL_SLEEP_INTERVAL);
 				sleep_interval = 0;
+			}
 		}
 		adjust_times = 0;
 	}
@@ -224,6 +225,11 @@ int main(int argc, char *argv[])
 
 
 	while (1) {
+		adjust_times++;
+		if(adjust_times >= 10){
+			gettimeofday(&t1, 0);
+		}
+
 		for (i = 0; i < NB_SAMPLES; i++) {
 #ifdef RASPBERRY
 			bit = GPIO_LEV(AVALANCHE_IN);
