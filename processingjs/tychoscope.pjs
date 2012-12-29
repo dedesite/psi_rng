@@ -9,11 +9,11 @@ class Tychoscope{
   //in cm possible value in poec'h experiment : 1cm, 2.1cm, 4.2cm ou 8.3cm
   final double AVERAGE_DISTANCE = 2.1;
   //in degrees/sec possible value in poec'h experiment : 18, 36, 72, 144
-  final int ROTATION_SPEED = 144;//1000;
+  final int ROTATION_SPEED = 1440;//1000;
   //in cm/sec possible value in poec'h experiment : 1, 2, 4, 8
   final int SPEED = 8;//16;
   //in ms possible values in poec'h experiment : 100, 800, 1600, 3200
-  final int PAUSE_DELAY = 100;//10;
+  final int PAUSE_DELAY = 0;//10;
   //Necesaire pour l'affichage du tracé du robot
   ArrayList trail_points;
   
@@ -207,21 +207,82 @@ class Tychoscope{
         break;
     }
   }
+  void draw_line_trail(){
+    fill(0);
+    int nb_points = trail_points.size();
+    //On affiche le tracé avant le robot comme ça le robot passe par dessus
+    for(int i = 0 ; i < nb_points - 1 ; i++){
+      int[] p1 = trail_points.get(i);
+      int[] p2 = trail_points.get(i+1);
+      line(p1[0], p1[1], p2[0], p2[1]);
+    }
+  }
+
+  void draw_bezier_trail(){
+    fill(0);
+    int nb_points = trail_points.size();
+    //Try to display Bézier curve instead of rough lines
+    noFill();
+    stroke(0);
+    if(nb_points >= 4){
+      //We want to draw a continuous Bézier curve so we use bezierVertex for that
+      int[] first_point = trail_points.get(0);
+      beginShape();
+      vertex(first_point[0], first_point[1]);
+      //As we want smoothly continous curve, we need to have the first control  point
+      //of the next curve align with the last control point and the last point of the previous curve
+      //So our we create this control point, the others points are from the robot.
+      //it's nb_points - 2 cause the last point is always moving and we don't want a moving curve
+      for(int i = 1 ; i < nb_points - 2 ; i = i+2){
+        int[] c1;
+        //For the first curve we do not create control point
+        if(i == 1){
+          //control points
+          c1 = trail_points.get(i);
+          start_ind = i + 1
+          //increment i cause we used one more point
+          i++;
+        }
+        else{
+          //calculate c1
+          //Calculate the vector of the previous control point and last point
+          int[] last_control_point = trail_points.get(i - 2);
+          int[] last_anchor_point = trail_points.get(i - 1);
+          //I should have use PVector since the beginning...
+          int[] v = [last_anchor_point[0] - last_control_point[0], last_anchor_point[1] - last_control_point[1]];
+          int c1 = [last_anchor_point[0] + v[0], last_anchor_point[1] + v[1]];
+          start_ind = i;
+        }
+
+        int[] c2 = trail_points.get(start_ind);
+        //The first anchor point is the last point of the previous curve
+        //So we only care about the last point
+        int[] a2 = trail_points.get(start_ind+1);
+
+        bezierVertex(c1[0], c1[1], c2[0], c2[1], a2[0], a2[1]);
+      }
+      endShape();
+    }
+  }
+  void draw_trail(){
+    if(BEZIER_TRAIL){
+      draw_bezier_trail();
+    }
+    else{
+      draw_line_trail();
+    }
+  }
   
   void display(){
     if(rng.is_ready()){
       move();
     }
 
-    if(!HIDE_ROBOT || experiment_ended){
-      fill(0);
-      //On affiche le tracé avant le robot comme ça le robot passe par dessus
-      for(int i = 0 ; i < trail_points.size() - 1 ; i++){
-        int[] p1 = trail_points.get(i);
-        int[] p2 = trail_points.get(i+1);
-        line(p1[0], p1[1], p2[0], p2[1]);
-      }
-      
+    if(!HIDE_TRAIL){
+      draw_trail();
+    }
+
+    if(!HIDE_ROBOT){
       //Le robot est désactivé pendant la génération du pool
       //On l'affiche en gris
       if(!rng.is_ready()){
@@ -231,7 +292,7 @@ class Tychoscope{
         fill(col);
       }
         
-      if(!experiment_ended){
+      if(experiment_started){
         //Robot circle
         ellipse(pos_x, pos_y, circle_size, circle_size);
         //Angle line position

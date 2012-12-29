@@ -1,9 +1,15 @@
 WISH LIST :
+- Anim smoothly the bezier curve by displaying only part of the last curve instead of display it "brutally" when it's done.
+We wan't to fill that the curve is drawing in real time :)
+- Be able to pass options (draw curve, hide robot, speed, duration etc.) to the experiment instead of using constants
+- Use PVector instead of int array in processingJs to store points...
+- fix the collision bug with the robot and the frame
 - Remove the canva's margin in chromium
-- Build the electronic device
 - Add a proper log system ? => Maybe log should be done only via client and then save to the server hosting experiments?
 - Modify index.html to load either the robot_hazard experiment or random_graph
 DONE:
+- draw bezier curves (made of 4 points) instead of lines for the robot trajectory.
+- Build the electronic device
 - make it work on the raspberry pi
 - Test cross domain websocket
 - use mkfifo instead of mknode

@@ -101,10 +101,9 @@ sample interval will be X+computation_time. So we need to calculate,
 on avarage, what is the cost of our algorithm and substract it to the theoritical sleep interval
 This way we know that we have X samples per second, even if the interval is not always the same.
 */
-void adjust_sleep_interval(){
+void adjust_sleep_interval(struct timeval *t1, struct timeval *t0){
     if(adjust_times >= 10){
-        gettimeofday(&t2, 0);
-        long diff = diff_time(&t2, &t1);
+        long diff = diff_time(t1, t0);
         //We expect the code above take 100ms to execute
         if(diff > SAMPLE_DURATION){
             //Attention we are in micro second here
@@ -253,7 +252,11 @@ int main(int argc, char *argv[])
 
         send_numbers();
 
-        adjust_sleep_interval();
+        if(adjust_times >= 10){
+            gettimeofday(&t2, 0);
+        }
+
+        adjust_sleep_interval(&t2, &t1);
     }
 
 #ifdef RASPBERRY

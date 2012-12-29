@@ -34,16 +34,16 @@ Note : if you want to use the raspberry GPIO, you will have to uncomment RASPBER
 
 # Launch everything
 
-## The server
-    ./server
-
-## Then the rng
-
+## The rng
     ./rng
 
 Or if you want to accesss the GPIO :
 
     sudo ./rng
+
+## Then the server
+
+    ./server
 
 You should see messages that they are starting.
 

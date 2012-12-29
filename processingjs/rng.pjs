@@ -24,6 +24,7 @@ class Rng{
   //Nombre de flip et de 1 depuis la dernière génération de boolean
   int current_nb_flips = 0;
   int current_nb_ones = 0;
+  int current_nb_bytes = 0;
   //Tableau stockant le nombre d'occurence pour chaque valeur d'un byte
   int[] current_bytes = new int[256];
   
@@ -52,6 +53,7 @@ class Rng{
     for (int i = 0; i < current_bytes.length; i++) {
       current_bytes[i] = 0;
     }
+    current_nb_bytes = 0;
   }
   
   //Renvois un nombre entier entre les bornes low et high (inclusive)
@@ -105,7 +107,6 @@ class Rng{
     return k - 1;
   }
 
-  
   //On définit un byte aléatoirement en prenant celui qui est apparu
   //Le plus souvent parmis les n derniers tirages
   //Peut-être pas la meilleure solution, à voir...
@@ -124,21 +125,43 @@ class Rng{
     return best_val;
   }
   
-  void fill_pool(){
+  void fill_boolean_pool(boolean bit){
     if(current_nb_flips > nb_sample_per_generation){
-      if(boolean_pool.size() < max_pool_size){
+      //If we exceed the pool size, remove the first bit cause we use it as a FIFO
+      if(boolean_pool.size() >= max_pool_size){
+        boolean_pool.remove(0);
+      }
+
+      if(nb_sample_per_generation == 0){
+        boolean_pool.add(bit);
+      }
+      else{
         boolean_pool.add(current_nb_ones > (current_nb_flips/2));
-        current_nb_ones = 0;
-        current_nb_flips = 0;
       }
-      if(byte_pool.size() < max_pool_size){
-        int qi = get_max_occurence_ind(current_bytes);
-        byte_pool.add(qi);
-        reinit_byte_count();
-      }
+      current_nb_ones = 0;
+      current_nb_flips = 0;
     }
   }
-  
+
+  void fill_byte_pool(int num){
+    if(current_nb_bytes > nb_sample_per_generation){
+      //If we exceed the pool size, remove the first bit cause we use it as a FIFO
+      if(byte_pool.size() >= max_pool_size){
+        byte_pool.remove(0);
+      }
+
+      if(nb_sample_per_generation == 0){
+        byte_pool.add(num);
+      }
+      else{
+        int qi = get_max_occurence_ind(current_bytes);
+        byte_pool.add(qi);
+      }
+
+      reinit_byte_count();
+    }
+  }
+
   boolean is_ready(){
     return boolean_pool.size() > min_pool_size && byte_pool.size() > min_pool_size;
   }
@@ -153,8 +176,10 @@ class Rng{
   //Reçoit le résultat d'un port.read()
   void number_recieved(int num){
     last_byte = num;
+    current_nb_bytes++;
     //On compte le nombre d'occurrence de chacun des nombres générés
     current_bytes[num]++;
+    fill_byte_pool(num);
     if(test_homogeneity){
       test_number_homogeneity(num);
     }
@@ -164,21 +189,19 @@ class Rng{
       boolean bit = bit_at(b, i);
       current_nb_ones += int(bit);
       current_nb_flips++;
-      
+      fill_boolean_pool(bit);
       if(i == 7){
         last_boolean = bit;
       }
     }
-    
-    fill_pool();
   }
   
   void test_number_homogeneity(int num){
     homogeneity_bytes[num]++;
     current_homogeneity_sample++;
-    /*if(current_homogeneity_sample >= homogeneity_nb_sample){
+    if(current_homogeneity_sample >= homogeneity_nb_sample){
       write_homogeneity_test_data();
-    }*/
+    }
   }
   
   void start_homogeneity_test(){
@@ -199,10 +222,9 @@ class Rng{
       for(int i = 0 ; i < homogeneity_bytes.length; i++){
         report[i+1] = i + "," + homogeneity_bytes[i];
       }
-      //println("Save results into a file...");
-      /*String report_name = find_log_name("homogeneity_test.csv");
-      saveStrings(report_name, report);*/
-      //println("Test finish");
+      println("Save results into a file... look at your localeStorage");
+      String report_name = "homogeneity_test.csv";
+      saveStrings(report_name, report);
     }
   }
   

@@ -1,8 +1,10 @@
+int total_flips = 0;
+int total_ones = 0;
 int nb_flips = 0;
 int nb_ones = 0;
 int previous_nb_flips = 0;
 int previous_nb_ones = 0;
-static final int stats_intervale = 100;
+static final int stats_intervale = 1000;
 int lastStatsTime = 0;
 float[] vals;
 PFont f;
@@ -26,6 +28,7 @@ void draw() {
   background(255);
   
   float ratio = (float(previous_nb_ones)/float(previous_nb_flips));
+  float cumulative_ratio = (float(total_ones)/float(total_flips));
   
   // Draw lines connecting all points
   for (int i = 0; i < vals.length-1; i++) {
@@ -39,8 +42,9 @@ void draw() {
   
   textFont(f,16);                 // STEP 4 Specify font to be used
   fill(0);                        // STEP 5 Specify font color 
-  text("Ratio : " + ratio, 10, 20);  // STEP 6 Display Text 
-  text("Rate : " + previous_nb_flips * 10 + " bit/sec", 200, 20);
+  text("Ratio : " + ratio, 10, 20);  // STEP 6 Display Text
+  text("Cumulative Ratio : " + cumulative_ratio, 10, 50);
+  text("Rate : " + previous_nb_flips + " bit/sec", 200, 20);
 
   int elapsedTime = millis();
   int delta = elapsedTime - lastStatsTime;
@@ -52,6 +56,10 @@ void draw() {
     }
 
     lastStatsTime = elapsedTime;
+
+    total_ones += nb_ones;
+    total_flips += nb_flips;
+
     previous_nb_ones = nb_ones;
     previous_nb_flips = nb_flips;
     nb_ones = 0;
