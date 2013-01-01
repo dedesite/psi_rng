@@ -1,4 +1,5 @@
-Tychoscope t;
+//Try to simulate 10 tychoscope simulnateously
+Tychoscope[] tychoscope_array = new Tychoscope[1];
 PFont f;
 PrintWriter output;
 Rng rng;
@@ -20,6 +21,8 @@ int cm_px;
 final boolean HIDE_ROBOT = true;
 final boolean HIDE_TRAIL = false;
 final boolean BEZIER_TRAIL = true;
+
+ArrayList last_xp_quarters = new ArrayList();
 void setup(){
   //The size of the window must have the same ratio as in the poec'h experiment
   //which is 88/59
@@ -37,11 +40,14 @@ void setup(){
   }
   size(size_x, size_y);
   f = createFont("Arial", 20, true);
-  t = new Tychoscope();
+  for(int i = 0 ; i < tychoscope_array.length() ; i++){
+    tychoscope_array[i] = new Tychoscope();
+  }
+  
   
   if(first_setup){
     //rng = new Rng(50, 100);
-    rng = new Rng(1000, 1);
+    rng = new Rng(100, 0);
     //rng.start_homogeneity_test();
     first_setup = false;
   }
@@ -65,6 +71,9 @@ void draw(){
       text("Generating random numbers pool... ", width/2, height/2);
     }
     else{
+      if(last_xp_quarters.size() > 0){
+        text("Number was : " + (last_xp_quarters.get(0)+1) + " ?", width/2, height/2 - 20);  
+      }
       text("Press any key (except ESC) to start experiment... ", width/2, height/2);
     }
   }
@@ -76,18 +85,57 @@ void draw(){
       finish_experiment();
     }
 
-    t.display();
+
+    for(int i = 0 ; i < tychoscope_array.length() ; i++){
+      if(rng.is_ready()){
+        tychoscope_array[i].move();  
+      }
+    }
+    //We only display one robot cause it took to much ressource otherwise
+    tychoscope_array[0].display();
+    /*
+    textFont(f,300);
+    text("1", 300, 200);
+    text("2", width-300, 200);
+    text("3", 300, height - 200);
+    text("4", width-300, height - 200);
+    line(0, height/2, width, height/2);
+    line(width/2, 0, width/2, height);
+    */
   }
 }
 
 void start_experiment(){
   experiment_started = true;
   start_time = millis();
+  for(int i = 0 ; i < tychoscope_array.length() ; i++){
+    //init last time
+    tychoscope_array[i].last_time = millis();
+    tychoscope_array[i].current_curve_drawing_time = 0;
+  }
   last_time = start_time;
 }
 
 void finish_experiment(){
   experiment_started = false;
+  int[] average_quarter_list = { 0, 0, 0, 0 };
+  for(int i = 0 ; i < tychoscope_array.length() ; i++){
+    int quarter = tychoscope_array[i].get_average_quarter();
+    average_quarter_list[quarter]++;
+  }
+
+  int i = 0;
+  int average_quarter = i;
+  int max_nb_points = 0;
+  for(i ; i < 4 ; i++){
+    if(average_quarter_list[i] > max_nb_points){
+      max_nb_points = average_quarter_list[i];
+      average_quarter = i;
+    }
+  }
+ 
+  last_xp_quarters.remove(0);
+  last_xp_quarters.add(average_quarter);
   //TODO : save experiment data here...
   //We can automatically launch sevral experiments
   if(current_xp_num == NB_EXPERIMENTS){

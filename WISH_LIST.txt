@@ -1,13 +1,19 @@
 WISH LIST :
-- Anim smoothly the bezier curve by displaying only part of the last curve instead of display it "brutally" when it's done.
-We wan't to fill that the curve is drawing in real time :)
+- Try to manage in a more flowing manner the fact that the curve drawing time change when the second point is generated, or otherwise, start to draw the curve only when the next curve is ready ! It's obviously simpler!
 - Be able to pass options (draw curve, hide robot, speed, duration etc.) to the experiment instead of using constants
 - Use PVector instead of int array in processingJs to store points...
 - fix the collision bug with the robot and the frame
-- Remove the canva's margin in chromium
+- Remove the canva's margins
 - Add a proper log system ? => Maybe log should be done only via client and then save to the server hosting experiments?
 - Modify index.html to load either the robot_hazard experiment or random_graph
+- Test how many movement are made with one robot and with 10 to see if there is any difference
+- Create a website to store users and results and allow people do to experiment all over the world
+- find a name : tychoscope ? psi-experiment ?
+- register a domain name and configure livebox for dynDNS
+
 DONE:
+- Anim smoothly the bezier curve by displaying only part of the last curve instead of display it "brutally" when it's done.
+We wan't to fill that the curve is drawing in real time :)
 - draw bezier curves (made of 4 points) instead of lines for the robot trajectory.
 - Build the electronic device
 - make it work on the raspberry pi

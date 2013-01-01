@@ -9,11 +9,11 @@ class Tychoscope{
   //in cm possible value in poec'h experiment : 1cm, 2.1cm, 4.2cm ou 8.3cm
   final double AVERAGE_DISTANCE = 2.1;
   //in degrees/sec possible value in poec'h experiment : 18, 36, 72, 144
-  final int ROTATION_SPEED = 1440;//1000;
+  final int ROTATION_SPEED = 144;//1000;
   //in cm/sec possible value in poec'h experiment : 1, 2, 4, 8
   final int SPEED = 8;//16;
   //in ms possible values in poec'h experiment : 100, 800, 1600, 3200
-  final int PAUSE_DELAY = 0;//10;
+  final int PAUSE_DELAY = 100;//10;
   //Necesaire pour l'affichage du tracé du robot
   ArrayList trail_points;
   
@@ -41,7 +41,14 @@ class Tychoscope{
   //0 à 10cm
   int random_distance;
   
-  int last_state_time;
+  int last_state_time = 0;
+  int last_time = 0;
+  //Current time already passed drawing the current curve
+  int current_curve_drawing_time = 0;
+  //Time needed to draw the current curve
+  double curve_drawing_needed_time = 0;
+
+  double last_t;
   int sample_count=0;
   
   double distance_px;
@@ -119,10 +126,28 @@ class Tychoscope{
     
     return collision;
   }
+
+  //if first_point true, it will be an estimation
+  //cause we will only know the drawing time when the second point will be choose
+  //if its false, we can calculate accuratly the time
+  double calcul_curve_drawing_time(boolean first_point){
+    //If it's the first we interpolate and multiply them by two then add 4 PAUSE_DELAY
+    if(first_point){
+      return (rotation_time * 2.0) + (moving_time * 2.0) + (PAUSE_DELAY * 4);
+    }
+    //If not, add the current_curve_drawing_time to rotation and moving time and add only 2 PAUSE_DELAY
+    else{
+      return current_curve_drawing_time + rotation_time + moving_time + (PAUSE_DELAY * 2);
+    }
+  }
   
   void move(){
     int current_time = millis();
     int state_time = current_time - last_state_time;
+    int delta = current_time - last_time;
+    current_curve_drawing_time += delta;
+    last_time = current_time;
+    
     
     switch(state){
       case NEW_MOVE:
@@ -146,11 +171,30 @@ class Tychoscope{
         //Do this after the print
         if(!random_clockwise){
           random_angle = -random_angle;
-        }        
-        
+        }
+
+        //Start a new point with for begining the last point's position
+        int[] last_point = trail_points.get(trail_points.size() -1);
+        int[] p = new int[] {last_point[0], last_point[1]};
+        trail_points.add(p);
+
+        //If we are drawing a new curve
+        int nb_points = trail_points.size();
+        boolean new_curve = nb_points >= 5 && nb_points % 2 == 1;
+        if(new_curve){
+          //We need to know how many time the drawing will last
+          current_curve_drawing_time = 0;
+          last_t = 0.0;
+          curve_drawing_needed_time = calcul_curve_drawing_time(true);
+        }
+        else{
+          curve_drawing_needed_time = calcul_curve_drawing_time(false);
+        }
+
         sample_count++;
         last_state_time = millis();
         state = ROTATING;
+
         break;
       case ROTATING:
         if(state_time <= rotation_time){
@@ -188,11 +232,7 @@ class Tychoscope{
           add_distance(random_distance);
           previous_pos_x = pos_x;
           previous_pos_y = pos_y;
-          
-          //On commence un nouveau point
-          int[] p = new int[] {pos_x, pos_y};
-          trail_points.add(p);
-          
+                  
           last_state_time = millis();
           state = PAUSE_2;
         }
@@ -218,13 +258,32 @@ class Tychoscope{
     }
   }
 
+/**
+ * split a cubic curve into two curves at time=t
+ * taken from : http://processingjs.nihongoresources.com/bezierinfo/
+ * I just modify it a bit, so it just return the 3 last points (the first point is xa, ya) of the first splitted Bezier
+ */
+  PVector[] splitCubicCurve(double t, double xa, double ya, double xb, double yb, double xc, double yc, double xd, double yd) {
+    // interpolate from 4 to 3 points
+    PVector p5 = new PVector((1-t)*xa + t*xb, (1-t)*ya + t*yb);
+    PVector p6 = new PVector((1-t)*xb + t*xc, (1-t)*yb + t*yc);
+    PVector p7 = new PVector((1-t)*xc + t*xd, (1-t)*yc + t*yd);
+    // interpolate from 3 to 2 points
+    PVector p8 = new PVector((1-t)*p5.x + t*p6.x, (1-t)*p5.y + t*p6.y);
+    PVector p9 = new PVector((1-t)*p6.x + t*p7.x, (1-t)*p6.y + t*p7.y);
+    // interpolate from 2 points to 1 point
+    PVector p10 = new PVector((1-t)*p8.x + t*p9.x, (1-t)*p8.y + t*p9.y);
+    PVector[] points = {p5, p8, p10};
+    return points; 
+  }
+
   void draw_bezier_trail(){
     fill(0);
     int nb_points = trail_points.size();
     //Try to display Bézier curve instead of rough lines
     noFill();
     stroke(0);
-    if(nb_points >= 4){
+    if(nb_points >= 5){
       //We want to draw a continuous Bézier curve so we use bezierVertex for that
       int[] first_point = trail_points.get(0);
       beginShape();
@@ -234,6 +293,11 @@ class Tychoscope{
       //So our we create this control point, the others points are from the robot.
       //it's nb_points - 2 cause the last point is always moving and we don't want a moving curve
       for(int i = 1 ; i < nb_points - 2 ; i = i+2){
+        //Should we animate this curve ?
+        boolean is_last_curve = i + 5 > nb_points || (i == 1 && nb_points == 6);
+
+        int[] last_anchor_point = trail_points.get(i - 1);
+
         int[] c1;
         //For the first curve we do not create control point
         if(i == 1){
@@ -247,7 +311,6 @@ class Tychoscope{
           //calculate c1
           //Calculate the vector of the previous control point and last point
           int[] last_control_point = trail_points.get(i - 2);
-          int[] last_anchor_point = trail_points.get(i - 1);
           //I should have use PVector since the beginning...
           int[] v = [last_anchor_point[0] - last_control_point[0], last_anchor_point[1] - last_control_point[1]];
           int c1 = [last_anchor_point[0] + v[0], last_anchor_point[1] + v[1]];
@@ -259,7 +322,25 @@ class Tychoscope{
         //So we only care about the last point
         int[] a2 = trail_points.get(start_ind+1);
 
-        bezierVertex(c1[0], c1[1], c2[0], c2[1], a2[0], a2[1]);
+        if(is_last_curve){
+          //ellipse(a2[0], a2[1], 20, 20);
+        }
+        if(is_last_curve){
+          //Animate the last curve so that we think it's being drawn in real-time
+          //The most difficulte part is to find t cause we don't know what time exactly it will take!
+          double t = current_curve_drawing_time / curve_drawing_needed_time;
+          t = t > 1.0 ? 1.0 : t;
+          //We can't let the curve go backward
+          t = t < last_t ? last_t : t;
+          last_t = t;
+          if(t > 0.0){
+            PVector[] points = splitCubicCurve(t, last_anchor_point[0], last_anchor_point[1], c1[0], c1[1], c2[0], c2[1], a2[0], a2[1]);
+            bezierVertex(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y);
+          }
+        }
+        else{
+          bezierVertex(c1[0], c1[1], c2[0], c2[1], a2[0], a2[1]);  
+        }
       }
       endShape();
     }
@@ -274,10 +355,6 @@ class Tychoscope{
   }
   
   void display(){
-    if(rng.is_ready()){
-      move();
-    }
-
     if(!HIDE_TRAIL){
       draw_trail();
     }
@@ -306,5 +383,49 @@ class Tychoscope{
         ellipse(x1, y1, 4, 4);
       }
     }
+  }
+
+  //Return the quarter where a point is
+  int get_point_quarter(int x, int y){
+    if(x < width / 2 && y < height / 2){
+      return 0;
+    }
+    else if(x >= width / 2 && y < height / 2){
+      return 1;
+    }
+    else if(x < width / 2 && y >= height / 2){
+      return 2;
+    }
+    else{
+      return 3;
+    }
+  }
+
+  //Return the number of the quarter of the screen, where the robot was more.
+  //   0    |    1
+  //------------------
+  //   2    |    3
+  int get_average_quarter(){
+    int[] nb_points_per_quarter = { 0, 0, 0, 0 };
+    int nb_points = trail_points.size();
+    //Get all the points's quarter
+    for(int i = 0 ; i < nb_points ; i++){
+      int[] point = trail_points.get(i);
+      int quarter = get_point_quarter(point[0], point[1]);
+      nb_points_per_quarter[quarter]++;
+    }
+
+    //Then find where there is more
+    int i = 0;
+    int average_quarter = i;
+    int max_nb_points = 0;
+    for(i ; i < 4 ; i++){
+      if(nb_points_per_quarter[i] > max_nb_points){
+        max_nb_points = nb_points_per_quarter[i];
+        average_quarter = i;
+      }
+    }
+
+    return average_quarter;
   }
 }
