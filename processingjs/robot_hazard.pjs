@@ -7,7 +7,7 @@ int start_time;
 int last_time;
 boolean experiment_started = false;
 //in milliseconds
-final int EXPERIMENT_DURATION = 60*1000;
+final int EXPERIMENT_DURATION = 10*60*1000;
 final int NB_EXPERIMENTS = 30;
 //the board dimensions in cm
 final int BOARD_WIDTH = 88;
@@ -74,7 +74,7 @@ void draw(){
       if(last_xp_quarters.size() > 0){
         text("Number was : " + (last_xp_quarters.get(0)+1) + " ?", width/2, height/2 - 20);  
       }
-      text("Press any key (except ESC) to start experiment... ", width/2, height/2);
+      text("Press any key to start experiment... ", width/2, height/2);
     }
   }
   else{
