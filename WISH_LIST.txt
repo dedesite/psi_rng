@@ -9,9 +9,9 @@ WISH LIST :
 - Test how many movement are made with one robot and with 10 to see if there is any difference
 - Create a website to store users and results and allow people do to experiment all over the world
 - find a name : tychoscope ? psi-experiment ?
-- register a domain name and configure livebox for dynDNS
-
+- configure ddclient on the raspbery pi to change ip dynamically
 DONE:
+- register a dyndns domain name for the 
 - Anim smoothly the bezier curve by displaying only part of the last curve instead of display it "brutally" when it's done.
 We wan't to fill that the curve is drawing in real time :)
 - draw bezier curves (made of 4 points) instead of lines for the robot trajectory.
