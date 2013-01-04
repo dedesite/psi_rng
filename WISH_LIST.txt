@@ -1,4 +1,6 @@
 WISH LIST :
+- separate the number experiment, the peoc'h experiment and the bézier in 3 distinct files
+- create a makefile
 - Remove all globals from processing code
 - Refactor the code in order to make tychoscope independant of the rest, like rng
 - Display proper error message when there is no websocket connection or when we don't recieve numbers
@@ -14,6 +16,7 @@ WISH LIST :
 - Create a website to store users and results and allow people do to experiment all over the world
 - find a name : tychoscope ? psi-experiment ?
 - configure ddclient on the raspbery pi to change ip dynamically
+
 DONE:
 - register a dyndns domain name for the 
 - Anim smoothly the bezier curve by displaying only part of the last curve instead of display it "brutally" when it's done.

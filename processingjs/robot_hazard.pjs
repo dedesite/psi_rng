@@ -1,26 +1,26 @@
 //Try to simulate 10 tychoscope simulnateously
 Tychoscope[] tychoscope_array = new Tychoscope[1];
 PFont f;
-PrintWriter output;
 Rng rng;
 int start_time;
 int last_time;
-boolean experiment_started = false;
 //in milliseconds
 final int EXPERIMENT_DURATION = 10*60*1000;
 final int NB_EXPERIMENTS = 30;
+
 //the board dimensions in cm
 final int BOARD_WIDTH = 88;
 final int BOARD_HEIGHT = 59;
-//Will be usefull to save logs and traces
-int experiment_num = 0;
 int current_xp_num = 0;
 boolean first_setup = true;
+
+
 //Size of a centimeter in pixel
 int cm_px;
 final boolean HIDE_ROBOT = true;
 final boolean HIDE_TRAIL = false;
 final boolean BEZIER_TRAIL = true;
+boolean experiment_started = false;
 
 ArrayList last_xp_quarters = new ArrayList();
 void setup(){

@@ -21,7 +21,7 @@ Here is what I did on my Ubuntu 11.10 & 12.10 machines and my raspberry pi :
 
 Then cd to the 'c' directory and specify libwebsocket location for compilation :
 
-    gcc -Wall -O server.c -o server /usr/local/lib/libwebsockets.so
+    gcc -Wall -O rng_server.c -o rng_server /usr/local/lib/libwebsockets.so
 
 ## Building the rng (Random Number Generator)
 
@@ -43,7 +43,7 @@ Or if you want to accesss the GPIO :
 
 ## Then the server
 
-    ./server
+    ./rng_server
 
 You should see messages that they are starting.
 

@@ -1,0 +1,24 @@
+/**
+ * This is attempt to reproduice the experiment that René Peoc'h did in 1986 for his medicine
+ * thesis with a little robot called Tychoscope. The difference here is that we reproduice the
+ * robot behaviour in software. Therefor, the subject has to concentrate on his computer screen 
+ * instead of a real robot. Dimensions are not the same, since the screen size can't be
+ * as big as the paper board used by Peoc'h, but the ratio is kept.
+ * 
+ * Quick description : a robot moving randomly (using an electronic noise to generate it's random numbers)
+ * is land on a big paper board (88x59cm) with "walls"
+ * so it can't go outside. It's diameter is 8cm.
+ * It's choosing randomly it's orientation (clockwise or not), it's direction (forward or backward),
+ * the distance it travel each move and the angle of rotation.
+ * The trail of the robot is drawn by a pencil place at it's center.
+ * If we let the robot alone, the trails are statistically random, this mean the robot goes in every
+ * direction (the paper is divided in 4 area for the statistics) with no preference of one over another.
+ * If someone (or even a conditioned chick) sit himself in front of the robot and "mentaly" want 
+ * it to come closer. Statistically, the robot will go more often to the direction of the person.
+ * In the case of conditioned chick, the robot goes, on average, 2.5 times more in the direction of the 
+ * chick.
+ * 
+ * In this "reproduction", we want to know if the effect will be the same with a robot on a screen and
+ * the random number generator not close to the subject. Similar experiment already demonstrate that the
+ * distance to the generator does not affect the results, even if it's a very long distance (hundreds of km).
+ */
