@@ -1,4 +1,8 @@
 WISH LIST :
+- Remove all globals from processing code
+- Refactor the code in order to make tychoscope independant of the rest, like rng
+- Display proper error message when there is no websocket connection or when we don't recieve numbers
+- Close WS connection automatically when experiment is ended or when user wait to much to input a response (like 1 min)
 - Try to manage in a more flowing manner the fact that the curve drawing time change when the second point is generated, or otherwise, start to draw the curve only when the next curve is ready ! It's obviously simpler!
 - Be able to pass options (draw curve, hide robot, speed, duration etc.) to the experiment instead of using constants
 - Use PVector instead of int array in processingJs to store points...
