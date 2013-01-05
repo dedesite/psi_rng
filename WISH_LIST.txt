@@ -1,5 +1,8 @@
 WISH LIST :
+- Pay attention that with Bezier animation the experiment doesn't end before all the curves are displayed
 - Try to manage in a more flowing manner the fact that the curve drawing time change when the second point is generated, or otherwise, start to draw the curve only when the next curve is ready ! It's obviously simpler!
+	=> HAVE TRY : unfortunetly the drawing time is often more than the estimate time (it doesn't take into account the time needed to run the application I think) so, even with this solution it doesn't animate smoothly.
+		=> NEED TO FINE ANOTHER SOLUTION !
 - Be able to pass options (draw curve, hide robot, speed, duration etc.) to the experiment instead of using constants
 - Use PVector instead of int array in processingJs to store points...
 - fix the collision bug with the robot and the frame
