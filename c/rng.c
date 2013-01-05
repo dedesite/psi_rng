@@ -39,14 +39,15 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "daemonize.h"
+
 //In microseconds
 #define THEORETICAL_SLEEP_INTERVAL 500
 //In milliseconds
 #define SAMPLE_DURATION 100
 long NB_SAMPLES = (SAMPLE_DURATION*1000)/THEORETICAL_SLEEP_INTERVAL;
 
-#define FIFO_FILE ".rng_fifo"
-
+#define FIFO_FILE "/tmp/.rng_fifo"
 
 uint32_t nb_numbers = 0;
 uint32_t adjust_times = 0;
@@ -198,6 +199,8 @@ void close_io()
 
 int main(int argc, char *argv[])
 {
+    daemonize();
+
     uint32_t bit;
     uint32_t i;
 

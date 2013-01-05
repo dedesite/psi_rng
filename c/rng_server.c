@@ -13,7 +13,9 @@ https://gist.github.com/3654228
 
 #include <libwebsockets.h>
 
-#define FIFO_FILE ".rng_fifo"
+#include "daemonize.h"
+
+#define FIFO_FILE "/tmp/.rng_fifo"
 //We sample the chaos 2000 times per second which mean 250bytes / sec
 //and the numbers are send each 100ms so we send 25 bytes each time
 #define MAX_NUMBER_PER_READ 25
@@ -105,6 +107,8 @@ static struct libwebsocket_protocols protocols[] = {
 };
 
 int main(void) {
+    daemonize();
+
     // server url will be http://localhost:8080
     int port = 8080;
     const char *interface = NULL;
