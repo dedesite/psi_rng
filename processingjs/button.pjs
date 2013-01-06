@@ -1,0 +1,92 @@
+/**
+ * Code taken from processingjs example :
+ * http://processingjs.org/learning/topic/buttons/
+ * I slighly modified it to handle also text in the button 
+ * and removed the class inheritance (with circle and rect) cause I only want rect.
+ */
+class Button
+{
+  int x, y;
+  int width, height;
+  String label;
+  color basecolor, highlightcolor;
+  color currentcolor;
+  boolean is_over = false;
+  boolean pressed = false;   
+
+  Button(int pos_x, int pos_y, int a_width, int a_height, String a_text) 
+  {
+    x = pos_x;
+    y = pos_y;
+    width = a_width;
+    height = a_height;
+    set_text(a_text);
+
+    basecolor = color(255, 255, 255);
+    highlightcolor = color(125, 125, 125);
+    currentcolor = basecolor;
+  }
+
+  void set_text(String a_text){
+    label = a_text;
+    float text_width = textWidth(label);
+    console.log("text_width", text_width);
+    //textWidth does not work very well so I added 100 to the width
+    width = text_width > width ? text_width+100 : width;
+    console.log("widht=", width);
+  }
+
+  void update() 
+  {
+    if(over()) {
+      currentcolor = highlightcolor;
+    } 
+    else {
+      currentcolor = basecolor;
+    }
+  }
+
+  void display() 
+  {
+    stroke(0);
+    fill(currentcolor);
+    rect(x-width/2, y-height/2, width, height);
+    fill(0);
+    text(label, x, y);
+  }
+
+  boolean pressed() 
+  {
+    if(is_over) {
+      locked = true;
+      return true;
+    } 
+    else {
+      locked = false;
+      return false;
+    }    
+  }
+
+  boolean over() 
+  {
+    if( overRect(x-width/2, y-height/2, width, height) ) {
+      is_over = true;
+      return true;
+    } 
+    else {
+      is_over = false;
+      return false;
+    }
+  }
+
+  boolean overRect(int x, int y, int width, int height) 
+  {
+    if (mouseX >= x && mouseX <= x+width && 
+      mouseY >= y && mouseY <= y+height) {
+      return true;
+    } 
+    else {
+      return false;
+    }
+  }
+}

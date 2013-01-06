@@ -14,6 +14,7 @@ static class XpMgr{
   static boolean experiment_started = false;
   static int last_time;
   static int start_time;
+  static Button button = new Button(screen.width/2, screen.height/2, 100, 50, "Start");
 
 
   // Setup the screen to fit a certain size in centimeters.
@@ -72,7 +73,8 @@ static class XpMgr{
 
       if(XpMgr.current_trial_num == 0){
         //Call before experimentation callback
-        text("Press any key to start experiment... ", width/2, height/2);
+        XpMgr.button.update();
+        XpMgr.button.display();
       }
       else{
         //If it's not the first trial, call trial callback
@@ -102,21 +104,12 @@ void draw(){
   XpMgr.loop();
 }
 
-void keyPressed(){
-  if(key == ESC){
-    //For now, just exit en ESC cause we are not recording anything
-    exit();
-    /*experiment_started = false;
-    //overriding escape behaviour
-    key = 0;*/
-  }
-  else if(!XpMgr.experiment_started && rng.is_ready()){
-    XpMgr.start_experiment();
-  }
-}
-
 void mousePressed(){
-  if(!XpMgr.experiment_started && rng.is_ready()){
-    XpMgr.start_experiment();
+  console.log("try to call over")
+  XpMgr.button.over();
+  if(XpMgr.button.pressed()){
+    if(!XpMgr.experiment_started && rng.is_ready()){
+      XpMgr.start_experiment();
+    }
   }
 }

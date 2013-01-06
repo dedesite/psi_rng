@@ -1,15 +1,13 @@
 document.onreadystatechange = function () {
-  var connected = false;
+  window.connected = false;
   function start_ws(){
-    window.connected = connected;
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     //var socket = new WebSocket('ws://psi.chickenkiller.com:8080', 'rng-protocol');
     var socket = new WebSocket('ws://192.168.1.13:8080', 'rng-protocol');
     window.socket = socket;
     socket.binaryType = "arraybuffer";
     var first_time = true;
-    var recieved_numbers = false;
-    window.recieved_numbers = recieved_numbers;
+    window.recieved_numbers = false;
     socket.onmessage = function (message) {
       var numbers = new Uint8Array(message.data);
       if(first_time){
