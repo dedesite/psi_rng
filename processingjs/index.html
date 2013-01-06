@@ -6,16 +6,23 @@
   <script src="processing-1.4.1.min.js"></script>
 <script>
 document.onreadystatechange = function () {
-  if (document.readyState == "complete") {
+  var connected = false;
+  function start_ws(){
+    window.connected = connected;
     window.WebSocket = window.WebSocket || window.MozWebSocket;
-    var socket = new WebSocket('ws://psi.chickenkiller.com:8080', 'rng-protocol');
+    //var socket = new WebSocket('ws://psi.chickenkiller.com:8080', 'rng-protocol');
+    var socket = new WebSocket('ws://localhost:8080', 'rng-protocol');
+    window.socket = socket;
     socket.binaryType = "arraybuffer";
     var first_time = true;
+    var recieved_numbers = false;
+    window.recieved_numbers = recieved_numbers;
     socket.onmessage = function (message) {
       var numbers = new Uint8Array(message.data);
       if(first_time){
         console.log("number recieved : ", numbers);
         first_time = false;
+        recieved_numbers = true;
       }
       var app = Processing.getInstanceById('sketch');
       if(app != null){
@@ -28,7 +35,25 @@ document.onreadystatechange = function () {
 
     socket.onopen = function(){
       console.log("Connection open");
+      connected = true;
     }
+
+    socket.onclose = function(){
+      console.log("disconnected");
+      connected = false;
+    }
+  }
+
+  function check_ws_state(){
+    if(!connected){
+      start_ws();
+    }
+    //Check each 5 seconds the state of the connection
+    setTimeout(function(){check_ws_state()}, 5000);
+  }
+  if (document.readyState == "complete") {
+    start_ws();
+    setTimeout(function(){check_ws_state()}, 5000);
 /*
     var viewFullScreen = document.getElementById("sketch");
     if (viewFullScreen) {
@@ -52,12 +77,10 @@ document.onreadystatechange = function () {
 canvas {
   margin:  0px;
   padding: 0px;
+  position: fixed;
 }
 </style>
 </head>
-<body>
-  <!--canvas id="sketch" data-processing-sources="random_graph.pjs"></canvas-->
-  <center><canvas id="sketch" data-processing-sources="robot_hazard.pjs tychoscope.pjs rng.pjs"></canvas></center>
-</body>
+<body><canvas id="sketch" data-processing-sources="fortune_teller.pjs tychoscope.pjs rng.pjs experiment_manager.pjs"></canvas></body>
 </html>
 

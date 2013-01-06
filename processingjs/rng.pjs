@@ -32,6 +32,8 @@ class Rng{
   //Type FILO (First In Last Out)
   ArrayList boolean_pool;
   ArrayList byte_pool;
+
+  boolean first_connection = true;
   
   Rng(int pool_size, int nb_sample){
     min_pool_size = pool_size;
@@ -166,8 +168,6 @@ class Rng{
     return boolean_pool.size() > min_pool_size && byte_pool.size() > min_pool_size;
   }
   
-  //Je ne sais pas si cette fonction est bien juste car elle était faite pour les char au début
-  //Mais on s'en fou, je récupère bien le bon nombre de bit et c'est l'essentiel pour l'instant
   boolean bit_at(byte b, int pointer) {
      return ((b & (1 << pointer)) != 0);
   }
@@ -227,10 +227,39 @@ class Rng{
       saveStrings(report_name, report);
     }
   }
-  
-  void start_logging(){
+
+  void display(){
+    textFont(XpMgr.font,20);
+    fill(0);
+    textAlign(CENTER, CENTER);
+    if(!is_ready()){
+      String message;
+      //Global JS variable
+      if(connected){
+        first_connection = false;
+        if(recieved_numbers){
+          message = "Generating random numbers pool...";
+        }
+        else{
+          message = "Connected, waiting for numbers...";
+        }
+      }
+      else if(first_connection){
+        message = "Connecting to the Random Number Generator";
+      }
+      else{
+        message = "Lost connection to the Random Number Generator, try to reconnect...";
+      }
+      text(message, width/2, height/2);
+    }
   }
-  
-  void stop_logging(){
-  }
+}
+
+//Todo : create a Singleton or use only class methods
+Rng rng;
+
+// Called whenever there is something available to read
+//Accessible from JavaScript
+void serialEvent(int num) {
+  rng.number_recieved(num);
 }

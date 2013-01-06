@@ -106,8 +106,10 @@ static struct libwebsocket_protocols protocols[] = {
     }
 };
 
-int main(void) {
-    daemonize();
+int main(int argc, char *argv[]) {
+    if(argv[1] != NULL && strcmp(argv[1], "-d") == 0){
+        daemonize();
+    }
 
     // server url will be http://localhost:8080
     int port = 8080;

@@ -5,15 +5,19 @@ class Tychoscope{
   final int MOVING = 3;
   final int PAUSE_2 = 4;
   //in cm
-  final int ROBOT_DIAMETER = 8;
+  int robot_diameter = 8;
   //in cm possible value in poec'h experiment : 1cm, 2.1cm, 4.2cm ou 8.3cm
-  final double AVERAGE_DISTANCE = 2.1;
+  double average_distance = 2.1;
   //in degrees/sec possible value in poec'h experiment : 18, 36, 72, 144
-  final int ROTATION_SPEED = 144;//1000;
+  int rotation_speed = 144;//1000;
   //in cm/sec possible value in poec'h experiment : 1, 2, 4, 8
-  final int SPEED = 8;//16;
+  int speed = 8;//16;
   //in ms possible values in poec'h experiment : 100, 800, 1600, 3200
-  final int PAUSE_DELAY = 100;//10;
+  int pause_delay = 100;//10;
+
+  boolean display_robot = true;
+  boolean display_trail = true;
+  boolean display_curve = false;
   //Necesaire pour l'affichage du tracé du robot
   ArrayList trail_points;
   
@@ -54,7 +58,16 @@ class Tychoscope{
   double distance_px;
   int speed_px;
   
-  Tychoscope(){
+  Tychoscope(options){
+    robot_diameter = options.robot_diameter != null ? options.robot_diameter : robot_diameter;
+    display_curve = options.display_curve != null ? options.display_curve : display_curve;
+    display_trail = options.display_trail != null ? options.display_trail : display_trail;
+    display_robot = options.display_robot != null ? options.display_robot : display_robot;
+    average_distance = options.average_distance != null ? options.average_distance : average_distance;
+    speed = options.speed != null ? options.speed : speed;
+    rotation_speed = options.rotation_speed != null ? options.rotation_speed : rotation_speed;
+    pause_delay = options.pause_delay != null ? options.pause_delay : pause_delay;
+
     pos_x = width/2;
     pos_y = height/2;
     previous_pos_x = pos_x;
@@ -62,10 +75,10 @@ class Tychoscope{
     col = color(0, 255, 0);
     current_angle = 0.0;
     previous_angle = 0.0;
-    circle_size = ROBOT_DIAMETER * cm_px;
+    circle_size = robot_diameter * XpMgr.cm_px;
     circle_radius = circle_size / 2;
-    distance_px = AVERAGE_DISTANCE * cm_px;
-    speed_px = SPEED * cm_px;
+    distance_px = average_distance * XpMgr.cm_px;
+    speed_px = speed * XpMgr.cm_px;
     state = NEW_MOVE;
     
     trail_points = new ArrayList();
@@ -131,13 +144,13 @@ class Tychoscope{
   //cause we will only know the drawing time when the second point will be choose
   //if its false, we can calculate accuratly the time
   double calcul_curve_drawing_time(boolean first_point){
-    //If it's the first we interpolate and multiply them by two then add 4 PAUSE_DELAY
+    //If it's the first we interpolate and multiply them by two then add 4 pause_delay
     if(first_point){
-      return (rotation_time * 2.0) + (moving_time * 2.0) + (PAUSE_DELAY * 4);
+      return (rotation_time * 2.0) + (moving_time * 2.0) + (pause_delay * 4);
     }
-    //If not, add the current_curve_drawing_time to rotation and moving time and add only 2 PAUSE_DELAY
+    //If not, add the current_curve_drawing_time to rotation and moving time and add only 2 pause_delay
     else{
-      return current_curve_drawing_time + rotation_time + moving_time + (PAUSE_DELAY * 2);
+      return current_curve_drawing_time + rotation_time + moving_time + (pause_delay * 2);
     }
   }
   
@@ -159,7 +172,7 @@ class Tychoscope{
         random_forward = rng.qrand_boolean();
         random_distance = rng.qrand_poisson(distance_px);
         
-        rotation_time = int((random_angle / float(ROTATION_SPEED)) * 1000.0);
+        rotation_time = int((random_angle / float(rotation_speed)) * 1000.0);
         moving_time = int((random_distance / float(speed_px)) * 1000.0);
         /*println("Angle : " + random_angle);
         println("Sens des aiguilles d'une montre ? " + random_clockwise);
@@ -211,7 +224,7 @@ class Tychoscope{
         }
         break;
       case PAUSE_1:
-        if(state_time >= PAUSE_DELAY){
+        if(state_time >= pause_delay){
           last_state_time = millis();
           state = MOVING;
         }
@@ -238,7 +251,7 @@ class Tychoscope{
         }
         break;
       case PAUSE_2:
-        if(state_time >= PAUSE_DELAY){
+        if(state_time >= pause_delay){
           last_state_time = millis();
           state = NEW_MOVE;
         }
@@ -263,7 +276,7 @@ class Tychoscope{
  * taken from : http://processingjs.nihongoresources.com/bezierinfo/
  * I just modify it a bit, so it just return the 3 last points (the first point is xa, ya) of the first splitted Bezier
  */
-  PVector[] splitCubicCurve(double t, double xa, double ya, double xb, double yb, double xc, double yc, double xd, double yd) {
+  PVector[] split_cubic_curve(double t, double xa, double ya, double xb, double yb, double xc, double yc, double xd, double yd) {
     // interpolate from 4 to 3 points
     PVector p5 = new PVector((1-t)*xa + t*xb, (1-t)*ya + t*yb);
     PVector p6 = new PVector((1-t)*xb + t*xc, (1-t)*yb + t*yc);
@@ -334,7 +347,7 @@ class Tychoscope{
           t = t < last_t ? last_t : t;
           last_t = t;
           if(t > 0.0){
-            PVector[] points = splitCubicCurve(t, last_anchor_point[0], last_anchor_point[1], c1[0], c1[1], c2[0], c2[1], a2[0], a2[1]);
+            PVector[] points = split_cubic_curve(t, last_anchor_point[0], last_anchor_point[1], c1[0], c1[1], c2[0], c2[1], a2[0], a2[1]);
             bezierVertex(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y);
           }
         }
@@ -346,20 +359,19 @@ class Tychoscope{
     }
   }
   void draw_trail(){
-    if(BEZIER_TRAIL){
+    if(display_curve){
       draw_bezier_trail();
     }
-    else{
+
+    if(display_trail){
       draw_line_trail();
     }
   }
   
   void display(){
-    if(!HIDE_TRAIL){
-      draw_trail();
-    }
+    draw_trail();
 
-    if(!HIDE_ROBOT){
+    if(display_robot){
       //Le robot est désactivé pendant la génération du pool
       //On l'affiche en gris
       if(!rng.is_ready()){
@@ -368,20 +380,17 @@ class Tychoscope{
       else{
         fill(col);
       }
-        
-      if(experiment_started){
-        //Robot circle
-        ellipse(pos_x, pos_y, circle_size, circle_size);
-        //Angle line position
-        float x1 = pos_x + circle_radius * cos(radians(current_angle));
-        float y1 = pos_y + circle_radius * sin(radians(current_angle));
-        float x2 = pos_x - circle_radius * cos(radians(current_angle));
-        float y2 = pos_y - circle_radius * sin(radians(current_angle));
-        line(x1, y1, x2, y2);
-        //Robot "nose"
-        fill(color(255, 0, 0));
-        ellipse(x1, y1, 4, 4);
-      }
+      //Robot circle
+      ellipse(pos_x, pos_y, circle_size, circle_size);
+      //Angle line position
+      float x1 = pos_x + circle_radius * cos(radians(current_angle));
+      float y1 = pos_y + circle_radius * sin(radians(current_angle));
+      float x2 = pos_x - circle_radius * cos(radians(current_angle));
+      float y2 = pos_y - circle_radius * sin(radians(current_angle));
+      line(x1, y1, x2, y2);
+      //Robot "nose"
+      fill(color(255, 0, 0));
+      ellipse(x1, y1, 4, 4);
     }
   }
 

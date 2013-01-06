@@ -1,0 +1,116 @@
+/**
+ * Class that manage experimentations.
+ * You can define a message to display before the XP, between each trials and what to do at the end.
+ * This has to be a Singleton like the Rng
+ */
+static class XpMgr{
+  static float cm_px;
+  //Default values, can be overriden
+  static int experiment_duration = 10*60*1000;
+  static int nb_trials = 1;
+  static PFont font = createFont("Arial", 20, true);
+
+  static int current_trial_num = 0;
+  static boolean experiment_started = false;
+  static int last_time;
+  static int start_time;
+
+
+  // Setup the screen to fit a certain size in centimeters.
+  static void fit_screen_to_board(int board_width, int board_height){
+    boolean width_over_height = board_width/board_height > screen.width/screen.height;
+    int size_x, size_y;
+    if(width_over_height){
+      size_x = screen.width;
+      size_y = int(float(size_x) * float(board_height)/float(board_width));
+      XpMgr.cm_px = screen.width / board_width;
+    }
+    else{
+      size_y = screen.height;
+      size_x = int(float(size_y) * float(board_width)/float(board_height));
+      XpMgr.cm_px = screen.height / board_height;
+    }
+    size(size_x, size_y);
+  }
+
+  static void start_experiment(){
+    XpMgr.experiment_started = true;
+    XpMgr.start_time = millis();
+
+    if(typeof(xp_start_trial) != 'undefined'){
+      xp_start_trial();
+    }
+
+    if(XpMgr.current_trial_num == 0 && typeof(xp_start) != 'undefined'){
+      xp_start();
+    }
+  }
+
+  static void finish_experiment(){
+    experiment_started = false;
+    if(typeof(xp_finish_trial) != 'undefined'){
+      xp_finish_trial();
+    }
+
+    if(XpMgr.current_trial_num == XpMgr.nb_trials && typeof(xp_finish) != 'undefined'){
+      xp_finish();  
+    }
+
+    XpMgr.current_trial_num++;
+  }
+
+  static void loop(){
+    background (255);
+    
+    if(!rng.is_ready()){
+      rng.display();
+    }
+    else if(!XpMgr.experiment_started){
+      textFont(XpMgr.font,20);
+      fill(0);
+      textAlign(CENTER, CENTER);
+
+      if(XpMgr.current_trial_num == 0){
+        //Call before experimentation callback
+        text("Press any key to start experiment... ", width/2, height/2);
+      }
+      else{
+        //If it's not the first trial, call trial callback
+        if(typeof(xp_between_trial) != 'undefined'){
+          xp_between_trial();  
+        }
+      }
+    }
+    else{
+      int current_time = millis();
+      int delta = current_time - XpMgr.last_time;
+      XpMgr.last_time = current_time;
+      if(XpMgr.last_time - XpMgr.start_time >= XpMgr.experiment_duration){
+        finish_experiment();
+      }
+
+      //Call loop function callback
+      if(typeof(xp_loop) != 'undefined'){
+        xp_loop();
+      }
+    }
+  }
+}
+
+
+void draw(){
+  XpMgr.loop();
+}
+
+void keyPressed(){
+  if(key == ESC){
+    //For now, just exit en ESC cause we are not recording anything
+    exit();
+    /*experiment_started = false;
+    //overriding escape behaviour
+    key = 0;*/
+  }
+  else if(!XpMgr.experiment_started && rng.is_ready()){
+    XpMgr.start_experiment();
+  }
+}

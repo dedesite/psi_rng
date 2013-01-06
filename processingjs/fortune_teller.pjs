@@ -1,0 +1,74 @@
+/**
+ * This experiment is a attempt to use the robot moving information to associate it with a number that the subject though.
+ * To do that, we create several instance of the Tychoscope but don't display them, instead we display 4 numbers 
+ * (1 for each screen quarter) and we move very quickly the robot (10 times faster as in the original experiment).
+ * At the end, we count where goes the robots the more and calcul the average quarter and assign it to the corresponding number.
+ */
+Tychoscope[] tychoscope_array = new Tychoscope[10];
+//We can have severals quarters per trials (eg. 4 robots in the 1 and 4 robots in the 2)
+ArrayList last_xp_quarters = new ArrayList();
+void setup(){
+  XpMgr.fit_screen_to_board(88, 59);
+  XpMgr.experiment_duration = 10*1000;
+  XpMgr.nb_trials = 10;
+  //Maybe create a singleton
+  rng = new Rng(100, 0);
+}
+
+void xp_start_trial(){
+  for(int i = 0 ; i < tychoscope_array.length() ; i++){
+    tychoscope_array[i] = new Tychoscope({
+      diameter: 8, 
+      speed: 80,
+      average_distance: 2.1,
+      rotation_speed: 1440,
+      pause_delay: 0,
+      display_trail: false,
+      display_curve: false,
+      display_robot: false
+    });
+  }
+}
+
+void xp_between_trial(){
+  if(last_xp_quarters.size() > 0){
+    text("Number was : " + (last_xp_quarters.get(0)+1) + " ?", width/2, height/2 - 20);  
+  }
+}
+
+void xp_loop(){
+  for(int i = 0 ; i < tychoscope_array.length() ; i++){
+    tychoscope_array[i].move();
+    //tychoscope_array[i].display();
+  }
+  //Display the numbers in each quarter
+  textFont(XpMgr.font,300);
+  text("1", 300, 200);
+  text("2", width-300, 200);
+  text("3", 300, height - 200);
+  text("4", width-300, height - 200);
+  line(0, height/2, width, height/2);
+  line(width/2, 0, width/2, height);
+}
+
+void xp_finish_trial(){
+  int[] average_quarter_list = { 0, 0, 0, 0 };
+  for(int i = 0 ; i < tychoscope_array.length() ; i++){
+    int quarter = tychoscope_array[i].get_average_quarter();
+    average_quarter_list[quarter]++;
+  }
+
+  int i = 0;
+  int average_quarter = i;
+  int max_nb_points = 0;
+  for(i ; i < 4 ; i++){
+    if(average_quarter_list[i] > max_nb_points){
+      max_nb_points = average_quarter_list[i];
+      average_quarter = i;
+    }
+  }
+ 
+  last_xp_quarters = new ArrayList();
+  //For now, just took the first quarter
+  last_xp_quarters.add(average_quarter);
+}

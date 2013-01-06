@@ -199,7 +199,9 @@ void close_io()
 
 int main(int argc, char *argv[])
 {
-    daemonize();
+    if(argv[1] != NULL && strcmp(argv[1], "-d") == 0){
+        daemonize();
+    }
 
     uint32_t bit;
     uint32_t i;

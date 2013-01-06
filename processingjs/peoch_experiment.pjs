@@ -22,3 +22,25 @@
  * the random number generator not close to the subject. Similar experiment already demonstrate that the
  * distance to the generator does not affect the results, even if it's a very long distance (hundreds of km).
  */
+Tychoscope tychoscope;
+void setup(){
+  XpMgr.fit_screen_to_board(88, 59);
+  //Maybe create a singleton
+  rng = new Rng(100, 0);
+  //I use the exact same parameters as in the original experiment
+  tychoscope = new Tychoscope({
+    diameter: 8, 
+    speed: 8,
+    average_distance: 2.1,
+    rotation_speed: 144,
+    pause_delay: 100,
+    display_trail: true,
+    display_curve: false,
+    display_robot: true
+  });
+}
+
+void xp_loop(){
+  tychoscope.move();
+  tychoscope.display();
+}

@@ -1,15 +1,12 @@
 WISH LIST :
+- Create a C program that call rngtest each 2000 bit and send results via websockets. This could help to rapidly tune the RNG.
 - Pay attention that with Bezier animation the experiment doesn't end before all the curves are displayed
-- separate the number experiment, the peoc'h experiment and the bézier in 3 distinct files
 - create a makefile
-- Remove all globals from processing code
-- Refactor the code in order to make tychoscope independant of the rest, like rng
-- Display proper error message when there is no websocket connection or when we don't recieve numbers
 - Close WS connection automatically when experiment is ended or when user wait to much to input a response (like 1 min)
 - Try to manage in a more flowing manner the fact that the curve drawing time change when the second point is generated, or otherwise, start to draw the curve only when the next curve is ready ! It's obviously simpler!
 	=> HAVE TRY : unfortunetly the drawing time is often more than the estimate time (it doesn't take into account the time needed to run the application I think) so, even with this solution it doesn't animate smoothly.
-		=> NEED TO FINE ANOTHER SOLUTION !
-- Be able to pass options (draw curve, hide robot, speed, duration etc.) to the experiment instead of using constants
+		=> NEED TO FIND ANOTHER SOLUTION !
+			=> I think the only solution is to decouple entirely the render of the bezier and the number generation. We need to have always the same speed for drawing, regardless the distance travel by the robot. So, the drawing can stop way after the moves but it has to be calculate.
 - Use PVector instead of int array in processingJs to store points...
 - fix the collision bug with the robot and the frame
 - Remove the canva's margins
@@ -21,6 +18,11 @@ WISH LIST :
 - configure ddclient on the raspbery pi to change ip dynamically
 
 DONE:
+- Remove all globals from processing code
+- Refactor the code in order to make tychoscope independant of the rest, like rng
+- Be able to pass options (draw curve, hide robot, speed, duration etc.) to the experiment instead of using constants
+- separate the number experiment, the peoc'h experiment and the bézier in 3 distinct files
+- Display proper error message when there is no websocket connection or when we don't recieve numbers
 - register a dyndns domain name for the 
 - Anim smoothly the bezier curve by displaying only part of the last curve instead of display it "brutally" when it's done.
 We wan't to fill that the curve is drawing in real time :)
