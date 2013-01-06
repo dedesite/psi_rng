@@ -1,3 +1,18 @@
+/**
+ * As the drawing of the trail bezier curve is asynchrone to the generation of the trail points
+ * we need to store each curve drawing time and the first point indice of the curve
+ */
+class CurveToDraw{
+  double drawing_time;
+  int first_point_ind;
+
+  CurveToDraw(double time, int ind){
+    drawing_time = time;
+    first_point_ind = ind;
+  }
+}
+
+
 class Tychoscope{
   final int NEW_MOVE = 0;
   final int ROTATING = 1;
@@ -20,6 +35,7 @@ class Tychoscope{
   boolean display_curve = false;
   //Necesaire pour l'affichage du tracé du robot
   ArrayList trail_points;
+  ArrayList curves_list;
   
   int pos_x;
   int pos_y;
@@ -35,6 +51,9 @@ class Tychoscope{
   int rotation_time;
   //Function of the random distance (in ms)
   int moving_time;
+  //Needed for the curve drawing time calculation
+  int previous_rotation_time;
+  int previous_moving_time;
   
   //Entre 0 et 360
   float random_angle;
@@ -45,12 +64,11 @@ class Tychoscope{
   //0 à 10cm
   int random_distance;
   
-  int last_state_time = 0;
-  int last_time = 0;
+  int last_state_time;
+  int last_time;
   //Current time already passed drawing the current curve
-  int current_curve_drawing_time = 0;
-  //Time needed to draw the current curve
-  double curve_drawing_needed_time = 0;
+  int current_curve_drawing_time;
+  int current_curve_drawing_ind;
 
   double last_t;
   int sample_count=0;
@@ -82,11 +100,18 @@ class Tychoscope{
     state = NEW_MOVE;
     
     trail_points = new ArrayList();
-    //On créer les deux premier points, pour l'instant identiques
+    curves_list = new ArrayList();
+    //Create the two first points. They are identic at the beginning.
     int[] p1 = new int[] {pos_x, pos_y};
     trail_points.add(p1);
     int[] p2 = new int[] {pos_x, pos_y};
     trail_points.add(p2);
+
+    last_state_time = 0;
+    last_time = 0;
+    current_curve_drawing_time = 0;
+    current_curve_drawing_ind = 0;
+    last_t = 0.0;
   }
   //Handle when < 0 or > 360
   void set_current_angle(float angle){
@@ -140,18 +165,11 @@ class Tychoscope{
     return collision;
   }
 
-  //if first_point true, it will be an estimation
-  //cause we will only know the drawing time when the second point will be choose
-  //if its false, we can calculate accuratly the time
-  double calcul_curve_drawing_time(boolean first_point){
-    //If it's the first we interpolate and multiply them by two then add 4 pause_delay
-    if(first_point){
-      return (rotation_time * 2.0) + (moving_time * 2.0) + (pause_delay * 4);
-    }
-    //If not, add the current_curve_drawing_time to rotation and moving time and add only 2 pause_delay
-    else{
-      return current_curve_drawing_time + rotation_time + moving_time + (pause_delay * 2);
-    }
+  //The drawing time of a curve is the moving and the rotation time
+  //of the last two points (the first point of the curve is from the previous curve and the second point is calculated)
+  //and pause_delay * 4
+  double calcul_curve_drawing_time(){
+    return previous_rotation_time + previous_moving_time + rotation_time + moving_time + (pause_delay * 4);
   }
   
   void move(){
@@ -193,16 +211,25 @@ class Tychoscope{
 
         //If we are drawing a new curve
         int nb_points = trail_points.size();
-        boolean new_curve = nb_points >= 5 && nb_points % 2 == 1;
+        boolean new_curve = (nb_points >= 6 && nb_points % 2 == 0) || nb_points == 5;
         if(new_curve){
           //We need to know how many time the drawing will last
-          current_curve_drawing_time = 0;
-          last_t = 0.0;
-          curve_drawing_needed_time = calcul_curve_drawing_time(true);
+          double needed_time = calcul_curve_drawing_time();
+          CurveToDraw curve;
+          if(nb_points == 5){
+            //The first curve is a special case cause it needs the first 4 points to be covered by the robot
+            //We wait until the fifth point cause it means that the robot already travel the four points.
+            curve = new CurveToDraw(current_curve_drawing_time, 1);
+            current_curve_drawing_time = 0;
+          }
+          else{
+            curve = new CurveToDraw(needed_time, nb_points - 2);
+          }
+          curves_list.add(curve);
         }
-        else{
-          curve_drawing_needed_time = calcul_curve_drawing_time(false);
-        }
+
+        previous_rotation_time = rotation_time;
+        previous_moving_time = moving_time;
 
         sample_count++;
         last_state_time = millis();
@@ -292,11 +319,11 @@ class Tychoscope{
 
   void draw_bezier_trail(){
     fill(0);
-    int nb_points = trail_points.size();
+    int nb_curves = curves_list.size();
     //Try to display Bézier curve instead of rough lines
     noFill();
     stroke(0);
-    if(nb_points >= 5){
+    if(nb_curves >= 1){
       //We want to draw a continuous Bézier curve so we use bezierVertex for that
       int[] first_point = trail_points.get(0);
       beginShape();
@@ -304,30 +331,27 @@ class Tychoscope{
       //As we want smoothly continous curve, we need to have the first control  point
       //of the next curve align with the last control point and the last point of the previous curve
       //So our we create this control point, the others points are from the robot.
-      //it's nb_points - 2 cause the last point is always moving and we don't want a moving curve
-      for(int i = 1 ; i < nb_points - 2 ; i = i+2){
-        //Should we animate this curve ?
-        boolean is_last_curve = i + 5 > nb_points || (i == 1 && nb_points == 6);
-
-        int[] last_anchor_point = trail_points.get(i - 1);
+      for(int i = 0 ; i < nb_curves ; i++){
+        //Should we animate this curve ? Yes, if the animation is not finished
+        boolean is_last_curve = i == current_curve_drawing_ind;
+        CurveToDraw to_draw = curves_list.get(i);
+        int[] last_anchor_point = trail_points.get(to_draw.first_point_ind - 1);
 
         int[] c1;
         //For the first curve we do not create control point
-        if(i == 1){
+        if(i == 0){
           //control points
-          c1 = trail_points.get(i);
-          start_ind = i + 1
-          //increment i cause we used one more point
-          i++;
+          c1 = trail_points.get(to_draw.first_point_ind);
+          start_ind = to_draw.first_point_ind + 1;
         }
         else{
           //calculate c1
           //Calculate the vector of the previous control point and last point
-          int[] last_control_point = trail_points.get(i - 2);
+          int[] last_control_point = trail_points.get(to_draw.first_point_ind - 2);
           //I should have use PVector since the beginning...
           int[] v = [last_anchor_point[0] - last_control_point[0], last_anchor_point[1] - last_control_point[1]];
           int c1 = [last_anchor_point[0] + v[0], last_anchor_point[1] + v[1]];
-          start_ind = i;
+          start_ind = to_draw.first_point_ind;
         }
 
         int[] c2 = trail_points.get(start_ind);
@@ -336,19 +360,23 @@ class Tychoscope{
         int[] a2 = trail_points.get(start_ind+1);
 
         if(is_last_curve){
-          //ellipse(a2[0], a2[1], 20, 20);
-        }
-        if(is_last_curve){
           //Animate the last curve so that we think it's being drawn in real-time
           //The most difficulte part is to find t cause we don't know what time exactly it will take!
-          double t = current_curve_drawing_time / curve_drawing_needed_time;
+          double t = current_curve_drawing_time / to_draw.drawing_time;
           t = t > 1.0 ? 1.0 : t;
-          //We can't let the curve go backward
-          t = t < last_t ? last_t : t;
           last_t = t;
           if(t > 0.0){
             PVector[] points = split_cubic_curve(t, last_anchor_point[0], last_anchor_point[1], c1[0], c1[1], c2[0], c2[1], a2[0], a2[1]);
             bezierVertex(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y);
+          }
+          if(t >= 1.0){
+            current_curve_drawing_time = 0;
+            //Drawing is finish, we can draw the next curve
+            current_curve_drawing_ind = i+1;
+          }
+          else{
+            //stop drawing here cause the curve is not finished
+            break;
           }
         }
         else{
