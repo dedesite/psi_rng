@@ -43,7 +43,7 @@ A bunch of experiments using the rng. Some of them may use violents or pornograp
 
 ## Processingjs code
 
-Port (and enhancement) of the processing experiment. The most advanced experiment is the "robot hasard" which is an software replication of the "tychoscope", the little robot used in Rene Peoc'h experiments.
+Port (and enhancement) of the processing experiment. The most advanced experiment is the "robot hasard" which is a software replication of the "tychoscope", the little robot used in Rene Peoc'h experiments.
 
 ## Node.js code
 
