@@ -12,17 +12,17 @@ void setup(){
   XpMgr.experiment_duration = 10*1000;
   XpMgr.nb_trials = 10;
   //Maybe create a singleton
-  rng = new Rng(100, 0);
+  rng = new Rng(1000, 0);
 }
 
 void xp_start_trial(){
   for(int i = 0 ; i < tychoscope_array.length() ; i++){
     tychoscope_array[i] = new Tychoscope({
       diameter: 8, 
-      speed: 80,
+      speed: 80, //increase the speed by 10
       average_distance: 2.1,
-      rotation_speed: 1440,
-      pause_delay: 0,
+      rotation_speed: 1440, //the rotation speed by 10
+      pause_delay: 0, //And remove pause delay
       display_trail: false,
       display_curve: false,
       display_robot: false

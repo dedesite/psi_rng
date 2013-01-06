@@ -1,4 +1,7 @@
 WISH LIST :
+- Manage properly the full screen (with a button ?) and the keyBoard input. Manage also smart phone via mousePress ?
+	=> Need to create some buttons
+- Manage the pool differently : fill it the first time then wait it to be really empty to make it not ready. Otherwise it alternate constantly between ready state and not ready
 - Create a C program that call rngtest each 2000 bit and send results via websockets. This could help to rapidly tune the RNG.
 - Pay attention that with Bezier animation the experiment doesn't end before all the curves are displayed
 - create a makefile

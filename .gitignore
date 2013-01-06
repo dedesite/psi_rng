@@ -3,3 +3,11 @@
 *.ods
 test_psi
 librdrand_linux
+c/random-generator-avalanche.net/
+c/random-generator-avalanche.net
+c/avalanche-test-utils/
+c/rng
+c/rng_server
+processing/robot_hazard/data/
+processing/robot_hazard/videos/
+processing/the_nineties/

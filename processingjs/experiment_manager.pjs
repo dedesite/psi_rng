@@ -114,3 +114,9 @@ void keyPressed(){
     XpMgr.start_experiment();
   }
 }
+
+void mousePressed(){
+  if(!XpMgr.experiment_started && rng.is_ready()){
+    XpMgr.start_experiment();
+  }
+}
