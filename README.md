@@ -9,7 +9,9 @@ I worked on a reproduction of an Hardware Random Number Generator made by [Rob S
 
 I now work on a reproduction of an Hardware Random Number Generator made by [Giorgio Vazzana](http://holdenc.altervista.org/avalanche/) which seems to have a more structured design, output directly digital values and seems to be less biais.
 
-My goal is to study effect of the intention (human or animal) on the matter throw the influence of hardware based randomness generation.
+# Project
+
+My goal is to study effect of the intention (human or animal) on the matter through the influence of hardware based randomness generation.
 
 I will try to reproduice the principles of [Rene Poec'h](http://psiland.free.fr/savoirplus/theses/theses.html#RenePeoch) experiment with [baby chicken and a robot](http://www.dailymotion.com/video/xb6zgf_l-esprit-et-la-matiere_tech) but with a "software robot" guide with the RNG.
 
