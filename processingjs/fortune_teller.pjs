@@ -12,7 +12,7 @@ void setup(){
   XpMgr.experiment_duration = 10*1000;
   XpMgr.nb_trials = 10;
   //Maybe create a singleton
-  rng = new Rng(1000, 0);
+  rng = new Rng(5000, 0);
 }
 
 void xp_start_trial(){

@@ -5,6 +5,10 @@ class Rng{
   //(on prendra le nombre le plus fréquement sorti par ex.)
   //Si le pool est à zéro, qrand renverra le dernier bit sorti
   int min_pool_size;
+
+  //Wether or not the rng as already reach the minimum pool size.
+  //Needed to manage the ready state in a smater manner
+  boolean reach_minimum_pool_size;
   //Je met un maximum pour éviter trop de consommation mémoire si on laisse tourner
   //le programme longtemps
   int max_pool_size = 10000;
@@ -165,7 +169,27 @@ class Rng{
   }
 
   boolean is_ready(){
-    return boolean_pool.size() > min_pool_size && byte_pool.size() > min_pool_size;
+    boolean pool_ok = boolean_pool.size() > min_pool_size && byte_pool.size() > min_pool_size;
+    //It's ok if the pool has it's minimum size
+    if(pool_ok){
+      if(!reach_minimum_pool_size){
+        reach_minimum_pool_size = true;
+      }
+
+      return true;
+    }
+    //If the size go to 0, then it's not ok anymore and we need to refill the pool
+    else if(boolean_pool.size() == 0 || byte_pool.size() == 0){
+      reach_minimum_pool_size = false;
+    }
+    //It it already has reach the minimum size, if the pool is not empty, it's ok, even if it's size
+    //is under the minimum
+    else if(reach_minimum_pool_size){
+      return true;
+    }
+
+    //It's has not reach the minimum size, then it's not ok
+    return false;
   }
   
   boolean bit_at(byte b, int pointer) {
