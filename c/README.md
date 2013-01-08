@@ -69,7 +69,7 @@ As I don't have a internet provider kind enough to give me freely a static IP, I
 ddclient seams to be a good candidate except that the version in raspbian is a bit old, so it doesn't work for example with freedns, which I use cause it has the "chickenkiller.com" domain name !
 
 So, we need to install a more recent version of ddclient.
-Start by installing ddclient vie apt-get
+Start by installing ddclient via apt-get :
 
     sudo apt-get install ddclient
 
