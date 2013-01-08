@@ -7,7 +7,7 @@ Arduino, Raspberry Pi, processing (legacy) and processingJs code for a DIY Hardw
 
 I worked on a reproduction of an Hardware Random Number Generator made by [Rob Seward](http://robseward.com/misc/RNG2/) which was inspired by the work of [Aaron Logue](http://www.cryogenius.com/hardware/rng/). I want to thank both of them for sharing their work.
 
-I now work on a reproduction of an Hardware Random Number Generator made by [Giorgio Vazzana](http://holdenc.altervista.org/avalanche/) which seems to have a more structured design, output directly digital values and seems to be less biais.
+I now work on a reproduction of an Hardware Random Number Generator made by [Giorgio Vazzana](http://holdenc.altervista.org/avalanche/) which seems to have a more structured design, output directly digital values and seems to be less biais. Special thanks to him, firstly cause its article is very complete and "scientific" and secondly cause he helps me building and tuning the circuit, so hat off !
 
 # Project
 
