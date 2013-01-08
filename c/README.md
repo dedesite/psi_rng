@@ -73,11 +73,24 @@ Start by installing ddclient vie apt-get
 
     sudo apt-get install ddclient
 
-To the dynDNS provider question, respond : other
-Then put freedns.afraid.org as server adress
-Then for the protocol, respond : dyndns (we will change it later)
+To the dynDNS provider question, respond : 
+    
+    other
+
+For server adress put (it's not really important):
+    
+    freedns.afraid.org
+
+Then for the protocol, respond (we will change it later) : 
+
+    dyndns
+
 Type your login, password
-eth0
+
+For the interface enter :
+
+    eth0
+
 Add your subdomain name :
 
     psi.chickenkiller.org
@@ -89,6 +102,7 @@ The problem is that freedns use a SHA1 in it's protocol, so we also need to inst
     cpanm --sudo Digest::SHA1
 
 Then download a more recent version of ddclient :
+
     # This is the last one from the official repository
     wget http://sourceforge.net/apps/trac/ddclient/export/139/trunk/ddclient
     sudo mv ddclient /usr/sbin/
@@ -101,15 +115,17 @@ Then edit the config file to change the protocol and use an externe site to retr
     sudo mv /etc/ddclient.conf /etc/ddclient/ddclient.conf
     sudo vim /etc/ddclient/ddclient.conf
 
-Change protocol=dyndns to :
+Change "protocol=dyndns" to :
+
     protocol=freedns
 
-If your behing a router, change use=if line to :
+If your behing a router, change "use=if..." line to :
 
     use=web, web=checkip.dyndns.com/, web-skip='IP Address'
 
-You can also remove the server line cause it take the default server for freedns
-And it's OK, just restart the service (don't pay attention to the $VERSION warning):
+You can also remove the server line cause it takes the default server for freedns.
+
+And we're done! Just restart the service (don't pay attention to the $VERSION warning) :
 
     sudo service ddclient restart
 
@@ -119,6 +135,7 @@ If you want to insure it is running :
 
 
 Those articles help me to find the solution :
+
 http://people.virginia.edu/~ll2bf/docs/nix/rpi_server.html
 http://gianpaj.com/post/34222308317/raspberry-pi-with-cloudflares-dynamic-dns-ddclient
 http://raspberrypi.stackexchange.com/questions/1901/compiling-for-cpan-not-possible-on-raspbian
