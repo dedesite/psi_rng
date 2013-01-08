@@ -62,3 +62,63 @@ To use the numbers just do something like this :
         //Do something with the numbers
       }
     }
+
+# Configuring a ddclient (for dynamic DNS)
+
+As I don't have a internet provider kind enough to give me freely a static IP, I need to use some dynamic DNS service. So, we need to install a dynamic DNS client.
+ddclient seams to be a good candidate except that the version in raspbian is a bit old, so it doesn't work for example with freedns, which I use cause it has the "chickenkiller.com" domain name !
+
+So, we need to install a more recent version of ddclient.
+Start by installing ddclient vie apt-get
+
+    sudo apt-get install ddclient
+
+To the dynDNS provider question, respond : other
+Then put freedns.afraid.org as server adress
+Then for the protocol, respond : dyndns (we will change it later)
+Type your login, password
+eth0
+Add your subdomain name :
+
+    psi.chickenkiller.org
+
+The problem is that freedns use a SHA1 in it's protocol, so we also need to install the perl binding for sha1 which is not included in Raspbian. This is where CPAN comes :
+
+    # Yes we also need to install gcc-4.7 cause apparently perl was build with it for Raspbian
+    sudo apt-get install cpanminus gcc-4.7
+    cpanm --sudo Digest::SHA1
+
+Then download a more recent version of ddclient :
+    # This is the last one from the official repository
+    wget http://sourceforge.net/apps/trac/ddclient/export/139/trunk/ddclient
+    sudo mv ddclient /usr/sbin/
+    sudo chmod +x /usr/sbin/ddclient
+
+Then edit the config file to change the protocol and use an externe site to retrieve public IP Adress:
+
+    sudo mkdir /etc/ddclient
+    # The ddclient conf place has changed
+    sudo mv /etc/ddclient.conf /etc/ddclient/ddclient.conf
+    sudo vim /etc/ddclient/ddclient.conf
+
+Change protocol=dyndns to :
+    protocol=freedns
+
+If your behing a router, change use=if line to :
+
+    use=web, web=checkip.dyndns.com/, web-skip='IP Address'
+
+You can also remove the server line cause it take the default server for freedns
+And it's OK, just restart the service (don't pay attention to the $VERSION warning):
+
+    sudo service ddclient restart
+
+If you want to insure it is running :
+
+    ps auwx | grep [d]dclient
+
+
+Those articles help me to find the solution :
+http://people.virginia.edu/~ll2bf/docs/nix/rpi_server.html
+http://gianpaj.com/post/34222308317/raspberry-pi-with-cloudflares-dynamic-dns-ddclient
+http://raspberrypi.stackexchange.com/questions/1901/compiling-for-cpan-not-possible-on-raspbian
