@@ -7,6 +7,7 @@ https://gist.github.com/3654228
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
@@ -14,14 +15,18 @@ https://gist.github.com/3654228
 #include <libwebsockets.h>
 
 #include "daemonize.h"
+#include "popenRWE.h"
 
 #define FIFO_FILE "/tmp/.rng_fifo"
 //We sample the chaos 2000 times per second which mean 250bytes / sec
 //and the numbers are send each 100ms so we send 25 bytes each time
 #define MAX_NUMBER_PER_READ 25
+#define NUM_SAMPLE_TO_TEST 101
 
 //Used to limit the connected client to 1
 struct libwebsocket *connected_client = NULL;
+//Wheter or not the connected_client is on the test_protocol
+bool test_protocol = false;
 
 //Just don't respond to http request
 static int callback_http(struct libwebsocket_context * this,
@@ -31,17 +36,14 @@ static int callback_http(struct libwebsocket_context * this,
 { return 0; }
 
 
-
-static int callback_rng(struct libwebsocket_context * this,
-                                   struct libwebsocket *wsi,
-                                   enum libwebsocket_callback_reasons reason,
-                                   void *user, void *in, size_t len)
-{
+//Return true if there is a new connection
+static bool manage_connection(struct libwebsocket *wsi, enum libwebsocket_callback_reasons reason){
     switch (reason) {
         case LWS_CALLBACK_ESTABLISHED: // just log message that someone is connecting
             if(!connected_client){
                 printf("connection established\n");
                 connected_client = wsi;
+                return true;
             }
             else{
                 printf("Connection refused : only one client can connect at a time\n");
@@ -49,12 +51,40 @@ static int callback_rng(struct libwebsocket_context * this,
             
             break;
         case LWS_CALLBACK_CLOSED:
-            if(connected_client) connected_client = NULL;
+            if(connected_client) {
+                connected_client = NULL;
+                test_protocol = false;
+            }
             break;
         default:
             break;
     }
-    
+
+    return false;
+}
+
+static int callback_rng(struct libwebsocket_context * this,
+                                   struct libwebsocket *wsi,
+                                   enum libwebsocket_callback_reasons reason,
+                                   void *user, void *in, size_t len)
+{
+
+    bool new_connection = manage_connection(wsi, reason);
+    if(new_connection){
+        test_protocol = false;
+    }
+    return 0;
+}
+
+static int callback_rngtest(struct libwebsocket_context * this,
+                                   struct libwebsocket *wsi,
+                                   enum libwebsocket_callback_reasons reason,
+                                   void *user, void *in, size_t len)
+{
+    bool new_connection = manage_connection(wsi, reason);
+    if(new_connection){
+        test_protocol = true;
+    }
     return 0;
 }
 
@@ -63,11 +93,10 @@ static int callback_rng(struct libwebsocket_context * this,
  which can be easilly read in javascript.
 */
 size_t file_size = 0;
-unsigned char numbers[LWS_SEND_BUFFER_PRE_PADDING + MAX_NUMBER_PER_READ + LWS_SEND_BUFFER_POST_PADDING];
-static void read_random_numbers(){
+static void read_random_numbers(unsigned char* numbers_array){
     FILE *fp = fopen(FIFO_FILE, "rb");
     if (fp) {
-        file_size = fread(&numbers[LWS_SEND_BUFFER_PRE_PADDING], 1, MAX_NUMBER_PER_READ, fp);
+        file_size = fread(numbers_array, 1, MAX_NUMBER_PER_READ, fp);
         if(file_size < MAX_NUMBER_PER_READ){
             printf("We've got not enough numbers : %zu instead of %d\n", file_size, MAX_NUMBER_PER_READ);
         }
@@ -82,12 +111,52 @@ static void read_random_numbers(){
     }
 }
 
+unsigned char numbers[LWS_SEND_BUFFER_PRE_PADDING + MAX_NUMBER_PER_READ + LWS_SEND_BUFFER_POST_PADDING];
+static void read_for_send(){
+    read_random_numbers(&numbers[LWS_SEND_BUFFER_PRE_PADDING]);
+}
+
 static void send_random_numbers(struct libwebsocket *wsi){
     //attention a bien avoir la taille du tableau et a ne pas faire de malloc sur le buffer a chaque fois...
     libwebsocket_write(wsi, &numbers[LWS_SEND_BUFFER_PRE_PADDING], file_size, LWS_WRITE_BINARY);
 }
 
+int current_sample_ind = 0;
+//Cumulate 20000 bits for test
+unsigned char numbers_to_test[MAX_NUMBER_PER_READ*NUM_SAMPLE_TO_TEST];
+static void read_for_test(){
+    read_random_numbers(&numbers_to_test[current_sample_ind*MAX_NUMBER_PER_READ]);
+    current_sample_ind++;
+}
 
+//Call rngtest with the 20000 bits and send the result
+static void test_random_numbers(struct libwebsocket *wsi){
+    //open the rngtest process
+    //FILE *fp = popen("rngtest", "w");
+    int pipe[3];
+    //Very important rngtest is run in pipe mode
+    pid_t pid = popenRWE(pipe, "rngtest --pipe");
+    if(pid > 0){
+        int nb_bytes = write(pipe[0], numbers_to_test, NUM_SAMPLE_TO_TEST*MAX_NUMBER_PER_READ);
+        //We need to close the pipe, otherwise we could wait undefinitly
+        close(pipe[0]);
+        char buf[LWS_SEND_BUFFER_PRE_PADDING+1024+LWS_SEND_BUFFER_POST_PADDING];
+        //Read stdout
+        nb_bytes = read(pipe[1], &buf[LWS_SEND_BUFFER_PRE_PADDING], 1024);
+        if(nb_bytes == 0){
+            //rngtest write error results to stderr
+            nb_bytes = read(pipe[2], &buf[LWS_SEND_BUFFER_PRE_PADDING], 1024);
+        }
+
+        pcloseRWE(pid, pipe);
+
+        libwebsocket_write(wsi, (unsigned char*)&buf[LWS_SEND_BUFFER_PRE_PADDING], nb_bytes, LWS_WRITE_TEXT);
+    }
+    else {
+        perror("error opening rngtest process");
+        exit(1);
+    }
+}
 
 static struct libwebsocket_protocols protocols[] = {
     /* first protocol must always be HTTP handler */
@@ -100,6 +169,11 @@ static struct libwebsocket_protocols protocols[] = {
         "rng-protocol", // protocol name - very important!
         callback_rng, // callback
         0 // we don't use any per session data
+    },
+    {
+        "rngtest-protocol", //Launch rngtest each 2000 bits and send the result
+        callback_rngtest,
+        0
     },
     {
         NULL, NULL, 0 /* End of list */
@@ -154,12 +228,29 @@ int main(int argc, char *argv[]) {
         //through the FIFO
         libwebsocket_service(context, 0);
 
+        if(test_protocol){
+            read_for_test();
+        }
+        else{
+            read_for_send();
+        }
 
-        read_random_numbers();
+
         //If we got a connected client
         //Send we send him the random numbers each 100ms
         if(connected_client){
-            send_random_numbers(connected_client);
+            if(test_protocol){
+                if(current_sample_ind >= NUM_SAMPLE_TO_TEST-1){
+                    test_random_numbers(connected_client);
+                }
+            }
+            else{
+                send_random_numbers(connected_client);
+            }
+        }
+
+        if(current_sample_ind >= NUM_SAMPLE_TO_TEST-1){
+            current_sample_ind = 0;
         }
     }
     
