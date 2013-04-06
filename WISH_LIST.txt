@@ -1,19 +1,21 @@
 WISH LIST :
+- launch automatically the deamon on start
+- Create a website to store users and results and allow people do to experiment all over the world
+- Reproduice simples PEAR experiments
 - Create a "use the force experiment" and "the nineties experiment"
 - Manage properly the full screen (with a button ?) and the keyBoard input. Manage also smart phone via mousePress ?
-- Create a C program that call rngtest each 2000 bit and send results via websockets. This could help to rapidly tune the RNG.
 - Pay attention that with Bezier animation the experiment doesn't end before all the curves are displayed
-- create a makefile
 - Close WS connection automatically when experiment is ended or when user wait to much to input a response (like 1 min)
 - Use PVector instead of int array in processingJs to store points...
 - fix the collision bug with the robot and the frame
 - Remove the canva's margins
 - Add a proper log system ? => Maybe log should be done only via client and then save to the server hosting experiments?
 - Test how many movement are made with one robot and with 10 to see if there is any difference
-- Create a website to store users and results and allow people do to experiment all over the world
 - find a name : tychoscope ? psi-experiment ?
 
 DONE:
+- create a makefile
+- Create a C program that call rngtest each 2000 bit and send results via websockets. This could help to rapidly tune the RNG.
 - Need to create some buttons
 - Modify index.html to load either the robot_hazard experiment or random_graph
 - configure ddclient on the raspbery pi to change ip dynamically

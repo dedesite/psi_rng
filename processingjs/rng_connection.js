@@ -2,9 +2,10 @@ document.onreadystatechange = function () {
   window.connected = false;
   function start_ws(){
     window.WebSocket = window.WebSocket || window.MozWebSocket;
-    //var socket = new WebSocket('ws://psi.chickenkiller.com:8080', 'rng-protocol');
-    //var socket = new WebSocket('ws://192.168.1.13:8080', 'rng-protocol');
-    var socket = new WebSocket('ws://localhost:8080', 'rng-protocol');
+    //official address is : ws://psi.chickenkiller.com:8080
+    //for testing locally it's (no real rng) : ws://localhost:8080
+    var address = 'ws://192.168.1.13:8080';
+    var socket = new WebSocket(address, 'rng-protocol');
     window.socket = socket;
     socket.binaryType = "arraybuffer";
     var first_time = true;
