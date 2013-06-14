@@ -32,6 +32,13 @@ class Rng{
   //Tableau stockant le nombre d'occurence pour chaque valeur d'un byte
   int[] current_bytes = new int[256];
   
+  int current_trial_flips = 0;
+  int current_trial_ones = 0;
+  //each x flips, we store the numbers of one as results
+  //which will be send at the end of the experiment
+  int nb_flips_per_trial = 200;
+  ArrayList xp_results;
+  
   //On stocke les chiffres généré dans des arrayList
   //Type FILO (First In Last Out)
   ArrayList boolean_pool;
@@ -47,6 +54,7 @@ class Rng{
     boolean_pool = new ArrayList();
     byte_pool = new ArrayList();
     
+    xp_results = new ArrayList();
     reinit_byte_count();
   }
   //Par défaut on a un très petit pool et les numéros sont générés
@@ -196,6 +204,34 @@ class Rng{
      return ((b & (1 << pointer)) != 0);
   }
   
+  void manage_xp_results(boolean bit){
+    current_trial_flips++;
+    current_trial_ones += int(bit);
+    if(current_trial_flips >= nb_flips_per_trial){
+      xp_results.add(current_trial_ones);
+      
+      current_trial_flips = 0;
+      current_trial_ones = 0;
+    }
+  }
+  
+  //We send result with a POST HTTP request
+  //which contains the xp name, and the results array 
+  void send_xp_results(string xp_name){
+    $.ajax({
+      url: "results",
+      type: "POST",
+      data: {name: xp_name, data: xp_results.toArray()},
+      success: function(data){
+        console.log(data);
+      }
+    });
+    
+    current_trial_flips = 0;
+    current_trial_ones = 0;
+    xp_results = new ArrayList();
+  }
+  
   //Appeler généralement dans le serialEvent de l'application
   //Reçoit le résultat d'un port.read()
   void number_recieved(int num){
@@ -211,6 +247,7 @@ class Rng{
     byte b = byte(num);
     for (int i = 0; i < 8; i++) {
       boolean bit = bit_at(b, i);
+      manage_xp_results(bit);
       current_nb_ones += int(bit);
       current_nb_flips++;
       fill_boolean_pool(bit);
@@ -286,4 +323,8 @@ Rng rng;
 //Accessible from JavaScript
 void serialEvent(int num) {
   rng.number_recieved(num);
+  //Gros hack trop moche pour faire fonctionner le random graph sans trop le modifier
+  if(typeof(number_callback) !== "undefined"){
+    number_callback(num);
+  }
 }

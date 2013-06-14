@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Cumulative line graph</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script src="raphael-min.js"></script>
+    <script src="g.raphael-min.js"></script>
+    <script src="g.line.js"></script>
+    <script>
+    window.onload = function () {
+    
+    $.ajax({
+      url: "results.json",
+      success: function(data){
+        var recieved_data = {pk_p:[], bs: [], pk_m:[]};
+        var max_size = 0;
+        for(var key in data){
+          recieved_data[key] = data[key].split(',').map(function(s){return parseInt(s, 10)});
+          if(recieved_data[key].length > max_size){
+            max_size = recieved_data[key].length;
+            var nb_ones = 0;
+            var plus = 0;
+            var moins = 0;
+            //test cumulative ratio
+            recieved_data[key].forEach(function(element, index, array) {
+              nb_ones += element;
+              element - 100 > 0 ? plus += element - 100 : moins += element - 100;
+              
+            });
+            console.log("Nb flips : ", max_size * 200, " Nb ones : ", nb_ones, "Ratio : ", nb_ones/(max_size*200));
+            console.log("On : ", max_size, " trials, ", plus, " where > to 0 and ", moins, "where < to 0");
+          }
+        }
+        
+        var r = Raphael("holder");
+       
+        console.log(recieved_data);
+        var x = [], x2 = [], x3 = [], x4 = [], y = [], y2 = [], y3 = [], y4 = [], y5 = [];
+        var total_flips = 0, total_ones = 0;
+        for (var i = 0; i < max_size; i++) {
+            if(i < recieved_data.pk_p.length){
+              y[i] = (y[i - 1] || 0) + (recieved_data.pk_p[i] - 100);
+              x[i] = i;
+            }
+            if(i < recieved_data.bs.length){
+              total_flips += 200;
+              total_ones += recieved_data.bs[i];
+              //y2[i] = total_ones - (total_flips - total_ones);
+              y2[i] = (y2[i - 1] || 0) + (recieved_data.bs[i] - 100);
+              x2[i] = i;
+            }
+            if(i < recieved_data.pk_m.length){
+              y3[i] = (y3[i - 1] || 0) + (recieved_data.pk_m[i] - 100);
+              x3[i] = i;
+            }
+            
+            x4[i] = i;
+            y4[i] = Math.sqrt(i)*20;
+            y5[i] = -y4[i];
+         }
+        console.log(y2);
+        r.linechart(30, 10, 300, 250, [x, x2, x3, [0, max_size], x4, x4], [y, y2, y3, [0, 0], y4, y5], {axis: "0 0 1 1", dash: ["", "", "",'-', "-", "-"]});
+
+      }
+    });
+      
+    
+    /*var recieved_data = {pk_p:[], bs: [], pk_m:[]};
+    //Simulation of 10000 trials
+    for (var i = 0; i < 1e4; i++) {
+      if(i < 8000)
+        recieved_data.pk_p.push(Math.min((Math.random() * 200) + 2, 200));
+      if(i < 9000)
+        recieved_data.bs.push(Math.random() * 200);
+      recieved_data.pk_m.push(Math.max((Math.random() * 200) - 2, 0));
+    }*/
+     
+          };
+    </script>
+  </head>
+  <body>
+    <p>
+      REG cumulative deviations of PK+ and PK- 200 sample data
+    </p>
+      <div id="holder"></div>
+  </body>
+</html>

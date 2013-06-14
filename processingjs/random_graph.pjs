@@ -13,15 +13,14 @@ PFont f;
 void setup() {
   size(400, 200);
   f = createFont("Arial", 16, true);
-  //println(Serial.list());
-  // Using the first available port (might be different on your computer)
-  //Serial port = new Serial(this, Serial.list()[0], /*115200*/19200);
  
   // An array of random values
   vals = new float[width];
   for (int i = 0; i < vals.length; i++) {
     vals[i] = height/2;
   }
+  
+  rng = new Rng(0, 0);
 }
 
 void draw() {
@@ -64,17 +63,18 @@ void draw() {
     previous_nb_flips = nb_flips;
     nb_ones = 0;
     nb_flips = 0;
+    
+    //Test d'envoi des résultat chaque seconde
+    rng.send_xp_results("bs");
   }
 }
 
-//Je ne sais pas si cette fonction est bien juste car elle était faite pour les char au début
-//Mais on s'en fou, je récupère bien le bon nombre de bit et c'est l'essentiel pour l'instant
 boolean bitAt(byte b, int pointer) {
    return ((b & (1 << pointer)) != 0);
 }
 
 // Called whenever there is something available to read
-void serialEvent(int val) {
+void number_callback(int val) {
   byte b = byte(val);
   
   for (int i = 0; i < 8; i = i+1) {
