@@ -7,3 +7,4 @@ prefix=/usr/local
 install: rng_server rng
 	install -m 0755 rng_server $(prefix)/bin
 	install -m 0755 rng $(prefix)/bin
+	install -m 0755 rng.sh /etc/init.d

@@ -9,7 +9,7 @@ document.onreadystatechange = function () {
   //official address is : ws://psi.chickenkiller.com:8080
   //for testing locally it's (no real rng) : ws://localhost:8080
   var address = 'ws://192.168.1.13:8080';
-  var socket = new WebSocket(address, 'rng-protocol');
+  var socket = new WebSocket(address, 'rngtest-protocol');
   socket.onopen = function(){
     console.log("Connection open");
   }
