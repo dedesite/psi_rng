@@ -4,7 +4,11 @@ document.onreadystatechange = function () {
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     //official address is : ws://psi.chickenkiller.com:8080
     //for testing locally it's (no real rng) : ws://localhost:8080
-    var address = 'ws://192.168.1.13:8080';
+    //var address = 'ws://192.168.1.13:8080';
+    var address = "ws://psi.chickenkiller.com:8080";
+    if(window.location.hostname == "localhost"){
+      address = "ws://192.168.1.13:8080";
+    }
     var socket = new WebSocket(address, 'rng-protocol');
     window.socket = socket;
     socket.binaryType = "arraybuffer";

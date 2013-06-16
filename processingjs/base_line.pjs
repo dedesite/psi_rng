@@ -1,0 +1,19 @@
+void setup() {
+  size(screen.width, screen.height);
+  XpMgr.experiment_duration = 3*60*1000;
+  XpMgr.nb_trials = 1;
+  rng = new Rng(100, 0);
+}
+
+void xp_loop(){
+  textFont(XpMgr.font,20);
+  fill(0);
+  textAlign(CENTER, CENTER);
+  text("Recieving numbers...", width/2, height/2);
+}
+
+void xp_finish_trial(){
+  //Send xp results
+  console.log("send results");
+  rng.send_xp_results("bs");
+}

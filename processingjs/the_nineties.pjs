@@ -1,0 +1,73 @@
+/* @pjs preload="the_nineties/1.jpg,the_nineties/2.jpg,the_nineties/3.jpg,the_nineties/4.jpg,the_nineties/5.jpg,the_nineties/6.jpg,the_nineties/7.jpg,the_nineties/8.jpg,the_nineties/9.jpg,the_nineties/10.jpg,the_nineties/11.jpg,the_nineties/12.jpg,the_nineties/13.jpg,the_nineties/14.jpg,the_nineties/15.jpg,the_nineties/16.jpg,the_nineties/17.jpg,the_nineties/18.jpg,the_nineties/19.jpg,the_nineties/20.jpg,the_nineties/21.jpg,the_nineties/22.jpg,the_nineties/23.jpg,the_nineties/24.jpg,the_nineties/25.jpg"; */
+
+/**
+ In this experiment, we try to see if an emotional induction, such as the display of an pornographic photography, can influence the generation of random numbers. To give a "direction" to the numbers, we will display the images slowely starting from the up, like it was in the 90's when internet connection was low and you had to wait 1 minute in order to get your image loaded.
+*/
+boolean start_waiting = true;
+int last_time = millis();
+final int IMAGE_COUNT = 25;
+//At the average rate (1800bit/sec) we want to have 10 000 bit of 0 to display entirely the picture
+final int MIN_ZERO_COUNT = 10000;
+PImage[] image_array = new PImage[IMAGE_COUNT];
+int current_displayed_image = 0;
+//We want to have a lot of 0
+int nb_zeroes = 0;
+
+void setup() {
+  size(screen.width, screen.height);
+  XpMgr.experiment_duration = 3*60*1000;
+  XpMgr.nb_trials = 1;
+  rng = new Rng(100, 0);
+}
+
+void xp_start_trial(){
+  //Choose randomly the image order
+  var random = [];
+  for(int i = 0 ; i < IMAGE_COUNT ; i++){
+    random.push(i);
+  }
+  //Load all images to avoid latency during the test
+  for(int i = 0 ; i < IMAGE_COUNT ; i++){
+    var rand_ind = rng.qrand_number(0, random.length -1);
+    image_array[i] = loadImage("the_nineties/" + (random[rand_ind]+1) + ".jpg");
+    random.splice(rand_ind, 1);
+  }
+}
+
+void xp_loop(){
+  //Display solely images and when it is entirely display, display the next one
+  PImage current_image = image_array[current_displayed_image];
+  current_height = Math.min((nb_zeroes / MIN_ZERO_COUNT) * current_image.height, current_image.height);
+  
+  copy(current_image, 0, 0, current_image.width, current_height, int(current_image.width/2.0), 0, current_image.width, current_height);
+  
+  if(nb_zeroes > MIN_ZERO_COUNT){
+    if(start_waiting){
+      start_waiting = false;
+      last_time = millis();
+    }
+    int elapsed_time = millis();
+    int delta = elapsed_time - last_time;
+    //We display entirely the image 1 second ;)
+    if(delta > 1000){
+      start_waiting = true;
+      nb_zeroes = 0;
+      current_displayed_image >= IMAGE_COUNT ? 0 : current_displayed_image++;
+    }
+  }
+}
+
+void xp_finish_trial(){
+  //Send xp results
+  console.log("send results");
+  rng.send_xp_results("pk_m");
+}
+
+void number_callback(int val) {
+  byte b = byte(val);
+  
+  for (int i = 0; i < 8; i = i+1) {
+    boolean bit = rng.bit_at(b, i);
+    int(bit) > 0 ? null : nb_zeroes++;
+  }
+}

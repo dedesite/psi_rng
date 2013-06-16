@@ -6,6 +6,7 @@ var redis = require("redis"),
 
 //Temp : when I need to delete test results
 //client.del("psi.xp.results");
+//client.hdel("psi.xp.results", "bs");
 
 app.post('/results', function(req, res){
   var name = req.body.name;
@@ -30,6 +31,6 @@ app.get('/*', function (req, res) {
 	res.sendfile(__dirname + req.originalUrl);
 });
 
-var port = 3000;
+var port = 3001;
 app.listen(port);
 console.log("Listening on port ", port);

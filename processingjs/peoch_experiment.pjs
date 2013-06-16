@@ -6,7 +6,7 @@
  * as big as the paper board used by Peoc'h, but the ratio is kept.
  * 
  * Quick description : a robot moving randomly (using an electronic noise to generate it's random numbers)
- * is land on a big paper board (88x59cm) with "walls"
+ * is land on a big paper board (88x60cm) with "walls"
  * so it can't go outside. It's diameter is 8cm.
  * It's choosing randomly it's orientation (clockwise or not), it's direction (forward or backward),
  * the distance it travel each move and the angle of rotation.
@@ -24,7 +24,7 @@
  */
 Tychoscope tychoscope;
 void setup(){
-  XpMgr.fit_screen_to_board(88, 59);
+  XpMgr.fit_screen_to_board(88, 60);
   //Maybe create a singleton
   rng = new Rng(100, 0);
   //I use the exact same parameters as in the original experiment

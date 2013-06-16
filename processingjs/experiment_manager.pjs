@@ -62,7 +62,6 @@ static class XpMgr{
 
   static void loop(){
     background (255);
-    
     if(!rng.is_ready()){
       rng.display();
     }
@@ -105,7 +104,7 @@ void draw(){
 }
 
 void mousePressed(){
-  console.log("try to call over")
+  console.log("try to call over");
   XpMgr.button.over();
   if(XpMgr.button.pressed()){
     if(!XpMgr.experiment_started && rng.is_ready()){

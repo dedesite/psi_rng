@@ -69,16 +69,12 @@ void draw() {
   }
 }
 
-boolean bitAt(byte b, int pointer) {
-   return ((b & (1 << pointer)) != 0);
-}
-
 // Called whenever there is something available to read
 void number_callback(int val) {
   byte b = byte(val);
   
   for (int i = 0; i < 8; i = i+1) {
-    boolean bit = bitAt(b, i);
+    boolean bit = rng.bit_at(b, i);
     nb_ones += int(bit);
     nb_flips++;
   }
