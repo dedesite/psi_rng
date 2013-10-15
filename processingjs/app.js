@@ -7,7 +7,7 @@ var redis = require("redis"),
 //Temp : when I need to delete test results
 //client.del("psi.xp.results");
 //client.hdel("psi.xp.results", "bs");
-
+//client.del("psi.xp.peoch_results.temoin");
 app.post('/results', function(req, res){
   var name = req.body.name;
   client.hget("psi.xp.results", name, function (err, reply) {
@@ -20,6 +20,21 @@ app.post('/results', function(req, res){
 
 app.get('/results.json', function(req, res) {
   client.hgetall("psi.xp.results", function (err, reply) {
+    var body = JSON.stringify(reply)
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Length', body.length);
+    res.end(body);
+  });
+});
+
+app.post('/peoch_results', function(req, res){
+  var name = req.body.name;
+  client.rpush("psi.xp.peoch_results." + name, req.body.data);
+  res.send("ok");
+});
+
+app.get('/peoch_results.json', function(req, res){
+  client.lrange("psi.xp.peoch_results.temoin", 0, -1, function (err, reply) {
     var body = JSON.stringify(reply)
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Length', body.length);
