@@ -1,0 +1,120 @@
+//Ici nous réalisons les calculs nécessaire à l'analyse des résultats de l'expérience de René Peoc'h
+//Et nous les envoyons au serveur
+int get_pixel(int x, int y){
+  return pixels[y * width + x];
+}
+
+int get_cm_nb_pixel(){
+  return Math.ceil(width / 88);
+}
+/*
+  Détermine si un carré d'un 1cm/1cm contient au moins un trait d'un pixel (1/4 de milimètre dans l'expérience originale)
+  x, y : upper left corner position of the square
+  return true is there is a pixel in the square
+*/
+boolean square_include_line(int x, int y){
+  int length = get_cm_nb_pixel();
+  int pix_x = x * length;
+  int pix_y = y * length;
+  for(var i = 0 ; i < length ; i++){
+    for(var j = 0 ; j < length ; j++){
+      color color = get_pixel(pix_x+i, pix_y+j);
+      if(hex(color) == "FF000000"){
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+void collect_peoch_results(){
+  console.log("collecting results");
+  loadPixels();
+  //Définition des cases des différentes zones.
+  /*
+      2        3
+  --------|---------
+  |                 |
+1 |                 | 4
+  |                 |
+  -                 -
+  |                 |
+8 |                 | 5
+  |                 |
+  --------|---------
+      7        6
+  */
+  int width = 80, height = 52;
+  //Pour chaque zone, on définit la coordonnée du point de départ
+  //Note : la feuille a une marge de 4cm de chaque côté correspondant au rayon du robot
+  var zone_array = [
+    {x: 4, y: 4, is_width : false},
+    {x: 4, y: 4, is_width : true},
+    {x: 44, y: 4, is_width : true},
+    {x: 83, y: 4, is_width : false},
+    {x: 83, y: 30, is_width : false},
+    {x: 44, y: 55, is_width : true},
+    {x: 4, y: 55, is_width : true},
+    {x: 4, y: 30, is_width : false},
+  ];
+  
+  //Pour chaque zone (de 1 à 8)
+  for(int i = 0 ; i < zone_array.length ; i++){
+    //On boucle sur les carrés de 1cm à testé et on regarde s'il y a un tracé (au moins 1 pixel noir)
+    var current_zone = zone_array[i];
+    current_zone.nb_square_crossed = 0;
+    int length = current_zone.is_width ? width/2 : height/2;
+    for(int j = 0 ; j < length ; j++){
+      int x = current_zone.x;
+      int y = current_zone.y;
+      current_zone.is_width ? x = x + j : y = y + j;
+      //Si il y a un tracé dans la zone, on le compte, stockage des résultat dans un tableau
+      current_zone.nb_square_crossed += square_include_line(x, y);
+    }
+  }
+  
+  return zone_array;
+}
+
+void send_peoch_results(results, name){
+  var nb_square_array = [];
+  for(int i = 0 ; i < results.length ; i++){
+    nb_square_array[i] = results[i].nb_square_crossed;
+  }
+  console.log(nb_square_array);
+  //Envois des résultats au serveur
+  $.ajax({
+    url: "peoch_results",
+    type: "POST",
+    data: {name:name, data:nb_square_array},
+    success: function(data){
+      console.log(data);
+    }
+  });
+}
+
+
+//Test unitaire
+void test(){
+  //Vérifie qu'il n'y a aucune case dans les zone quand tout est blanc
+  var res = collect_peoch_results();
+  for(int i = 0 ; i < res.length ; i++){
+    if(res[i].nb_square_crossed != 0){
+      console.error("Problème : une ou plusieurs case tracé sur un fond blanc");
+    }
+  }
+  console.log("ok");
+  //dessine une ligne autour du carré
+  line(get_cm_nb_pixel()*4, get_cm_nb_pixel()*4, width, get_cm_nb_pixel()*4);
+  line(get_cm_nb_pixel()*83, get_cm_nb_pixel()*4, get_cm_nb_pixel()*83, height);
+  line(get_cm_nb_pixel()*4, get_cm_nb_pixel()*55, width, get_cm_nb_pixel()*55);
+  line(get_cm_nb_pixel()*4, get_cm_nb_pixel()*4, get_cm_nb_pixel()*4, height);
+  
+  var res = collect_peoch_results();
+  for(int i = 0 ; i < res.length ; i++){
+    if(res[i].nb_square_crossed != 40 && res[i].nb_square_crossed != 26){
+      console.error("Pas toutes les lignes sont prisent en compte", res[i]);
+    }
+  }
+}

@@ -1,0 +1,44 @@
+Tychoscope tychoscope;
+void setup(){
+  XpMgr.fit_screen_to_board(88, 60);
+  //On double la taille de l'écran
+  //size(width * 2, height * 2);
+  XpMgr.experiment_duration = 20*60*1000;
+  XpMgr.nb_trials = 1;
+
+  rng = new Rng(100, 0);
+  
+  //Decommenté pour lancer les tests unitaires
+  //test();
+}
+
+void xp_start_trial(){
+  //The robot goes 10 times faster than the original experiment
+  tychoscope = new Tychoscope({
+    diameter: 8, 
+    speed: 8,
+    average_distance: 2.1,
+    rotation_speed: 144,
+    pause_delay: 100,
+    display_trail: true,
+    display_curve: false,
+    display_robot: false
+  });
+}
+
+void xp_loop(){
+  tychoscope.move();
+  tychoscope.display();
+}
+
+void xp_finish_trial(){
+  tychoscope.display();
+  var res = collect_peoch_results();
+  send_peoch_results(res, "temoin");
+  XpMgr.start_experiment();
+}
+
+void xp_finish(){
+  tychoscope.display();
+  text("Les " + XpMgr.nb_trials + " expériences sont finit, vous pouvez fermer le navigateur", screen.width/2, screen.height/2 - 20);  
+}
