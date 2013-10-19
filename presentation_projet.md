@@ -5,15 +5,23 @@ Elles tentent de mesurer l'influence de l'intention humaine ou animal sur la mat
 Pour cela, un générateur de nombres aléatoires électronique est utilisé, si le hasard est modifié (c'est à dire non conforme aux prédictions statistiques) alors c'est qu'il y a eu influence.
 
 L'expérience la plus « impressionnante » est celle réalisée sur des poussins (mais aussi sur l'homme) en 1986 par René Peoc'h pour sa thèse en médecine :
+
 http://www.dailymotion.com/video/xb6zgf_l-esprit-et-la-matiere_tech
+
 Voici aussi un lien vers sa thèse pour ceux qui souhaiteraient plus d'information (ça se lit très bien et très vite) :
+
 http://psiland.free.fr/savoirplus/theses/theses.html#RenePeoch
 
 D'autres expériences très intéressantes ont été faites par le Pear (Princeton Engineering Anomalies Research) dans les années 70 puis répliquées dans les années 2000 avec peu de succès (j'ai ma petite idée pourquoi et comment y remédier).
+
 http://www.metapsychique.org/Correlations-of-Random-Binary.html (là c'est moins sexy et c'est en anglais)
+
 Une présentation des travaux du labo en français :
+
 http://www.paranormal-info.com/Les-recherches-au-PEAR-sur-les.html
+
 Lien vers toutes leurs publications :
+
 http://www.princeton.edu/~pear/pdfs/
 
 Un autre projet se rapproche beaucoup de ce que j'aimerai faire : le Gobal Consciousness Project
@@ -32,6 +40,7 @@ J'aimerai insister sur le fait que ce projet est A BUT NON LUCRATIF et que le co
 ## Où j'en suis ?
 
 J'ai réalisé ce qu'on pourrait appeler une preuve de concept en fabriquant mon générateur selon ces plans (si vous avez le temps lisez cet article en entier c'est très instructif) :
+
 http://holdenc.altervista.org/avalanche/
 
 Ensuite, je récupère ma suite de 0 et de 1 sur un raspberry pi qui me sert aussi de serveur de websocket codé en C (avec libwebsocket) pour envoyer le tout sur une page web sur laquelle on réalise les expérimentations.
@@ -39,6 +48,7 @@ Pour l'instant, il s'agit d'une bête page HTML qui liste les XP que j'ai créé
 Mon plus gros travail a été de reproduire à l'identique le fonctionnement du Tychoscope, le robot utilisé par René Peoc'h pour ses recherches. J'ai un soucis c'est que le robot ne se comporte pas comme en vrai car je n'ai pas les mêmes résultat sur la phase de test de l'aléatoire du robot (quand il n'y a pas de poussins).
 
 Voici le github du projet (ne faite pas attention à la qualité du code, j'ai fais ça principalement le soir entre minuit et 5H du mat' quand j'en avais la possibilité) :
+
 https://github.com/dedesite/psi_rng
 
 ## Que reste-t-il à faire ?
@@ -51,15 +61,20 @@ Pour l'instant, j'ai fais mon montage électronique sur une bread board de mani�
 ### En embarqué
 
 Le code du raspberry ne gère pour l'instant qu'un générateur. J'espère qu'il sera possible d'en gérer plusieurs sur un même Raspberry histoire d'économiser de l'argent. Il faudra donc faire des tests pour voir quelle est la limite du nombre de générateur par machine sans gêner la génération de nombre et l'envoie via websocket.
-Il faudrait aussi rendre la procédure d'installation et de mise en marche la plus simple possible. Un joli paquet Rasbian et un démon qui se lance automatiquement serait les bienvenus. 
+
+Il faudrait aussi rendre la procédure d'installation et de mise en marche la plus simple possible. Un joli paquet Rasbian et un démon qui se lance automatiquement serait les bienvenus.
+
 Si le projet prend de l'envergure, il pourrait être bien aussi d'inciter d'autres possesseurs de Raspberry à faire partie de notre réseau de générateur en simplifiant aussi l'ajout de nouvelle machine dans le réseau et en fournissant des méthodes de test fiables et faciles pour le générateur de nombres aléatoires.
 
 ### Le site web
 
 Ca serait trop cool d'avoir un site web (international) qui donne envie aux personnes de passer les expérimentations, de challenger leurs amis (via facebook par exemple) et de donner le maximum d'informations sur elle même afin de pouvoir faire des lien entre les résultats et les personnes.
 Par exemple, il serait intéressant de voir si la tranche d'age, le sexe, la latéralité (gaucher ou droitier) ou encore la croyance en ce type de phénomène influence les résultats.
+
 Pour avoir un tel site, il nous faut déjà un bon design avec une bonne idée, un truc genre « devient toi même un jedi » pour titiller le côté geek qui est en nous.
+
 Côté technique, j'ai une grosse préférence pour le langage Ruby (pas forcément avec Rails) et j'aimerai vraiment que le site soit codé dans ce langage, histoire que si j'ai a reprendre le projet seul un jour, je ne me tire pas une balle avec du Zend framework ou autres immondices.
+
 Niveau BDD je serai bien tenté d'utiliser PostgreSQL qui semble vraiment solide, performant et pas sous l'égide d'une multinationale de merde comme Oracle. Après, MySQL est très bien aussi.
 Pour l'hébergement, je tablerais sur une plateforme cloud genre Heroku histoire d'avoir quelque chose de gratuit et pratique au début pour les tests et de pouvoir facilement monter en charge quand le site sera en prod.
 
@@ -72,7 +87,9 @@ Etant donné qu'une personne à la fois peut utiliser un générateur, il faudra
 
 On peut imaginer une application mobile (que je préférerai web pour éviter une redondance de code avec la partie desktop et les différents OS mobiles) sur laquelle on pourrait faire des XP adaptées à ce type de terminaux.
 Par exemple, faire l'XP du Tychoscope, en le mettant au bout de la table et en l' « appelant » mentalement pour voir s'il va venir. Ce type d'XP n'est pas réalisable avec un écran d'ordinateur classique.
-Analyse des résultats
+
+### Analyse des résultats
+
 Un gros travail d'analyse statistique doit aussi être effectué pour que ces XP aient un quelconque intérêt. C'est moins sexy mais c'est nécessaire pour valider la recherche et aller plus loin par la suite.
 J'ai peut-être dégoté un mathématicien capable de nous aider sur cette partie là :).
 
