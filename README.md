@@ -19,16 +19,10 @@ I will also create new kinds of experiments, more on this later...
 
 # Code
 
-All code is under GPL V3 licence except original_rng2.ino written by Rob Seward which is under Creative Commons Attribution-NonCommercial 2.5 License.
-see http://robseward.com/misc/RNG2/ for more details
-
-## Arduino's code
-
-Legacy code, I now use a raspberry pi as a Random Number Generator **and** a websockets server.
-Code that read the random frequency stream and transform it to a random bit stream.
-I tried several technics, for now, only the one from Rob Seward works well.
-
 ## Raspberry (C) code
+
+I now use a raspberry pi as a Random Number Generator **and** a websockets server (using libwebsocket).
+Code that read the random frequency stream and transform it to a random bit stream.
 
 Code espacially made to be run on slow configuration with few RAM and little CPU like raspberry.
 On the raspberry it took only 0.7% of the RAM and 15% of the CPU !
@@ -36,18 +30,15 @@ The first program reads GPIO, generates a stream of byte with the random bits an
 The second program reads the randoms numbers through the FIFO and send them via websockets if a client is connected.
 Note: Look at the `README.md` in the "c" directory
 
-## Processing code
-
-Legacy code, now use processingjs
-A bunch of experiments using the rng. Some of them may use violents or pornographics images to create an emotional reaction on the subject. I decided not to put thoses photos on the repository but to share links where you can find them.
-
 ## Processingjs code
 
-Port (and enhancement) of the processing experiment. The most advanced experiment is the "robot hasard" which is a software replication of the "tychoscope", the little robot used in Rene Peoc'h experiments.
+A bunch of experiments using the rng. Some of them may use violents or pornographics images to create an emotional reaction on the subject. I decided not to put thoses photos on the repository but to share links where you can find them.
 
-## Node.js code
+The most advanced experiment is the "robot hasard" which is a software replication of the "tychoscope", the little robot used in Rene Peoc'h experiments.
 
-First attempt to build a websockets server that send numbers read from the SerialPort. Should still work with Arduino though.
+## Licence
+
+All code is under GPL V3 licence.
 
 # Articles
 
