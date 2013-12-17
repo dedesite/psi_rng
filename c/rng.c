@@ -25,9 +25,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-/* Compile: gcc -Wall -O avalanche_hour.c -o avalanche_hour */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -121,7 +118,9 @@ void adjust_sleep_interval(struct timeval *t1, struct timeval *t0){
 }
 
 //Wether or not we are on a Raspberry, if not use software generated number
-//#define RASPBERRY 1
+#ifdef __arm__
+# define RASPBERRY 1
+#endif
 
 #ifdef RASPBERRY
 // GPIO Avalanche input

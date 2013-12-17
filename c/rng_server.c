@@ -181,25 +181,26 @@ static struct libwebsocket_protocols protocols[] = {
 };
 
 int main(int argc, char *argv[]) {
-    if(argv[1] != NULL && strcmp(argv[1], "-d") == 0){
+    if(argc > 2 && strcmp(argv[1], "-d") == 0){
         daemonize();
     }
 
     // server url will be http://localhost:8080
-    int port = 8080;
-    const char *interface = NULL;
-    struct libwebsocket_context *context;
-    // we're not using ssl
-    const char *cert_path = NULL;
-    const char *key_path = NULL;
-    const char *ca_path = NULL;
-    // no special options
-    int opts = 0;
+    struct lws_context_creation_info info;
+    memset(&info, 0, sizeof info);
+    info.port = 8080;
+    info.iface = NULL;
+    info.protocols = protocols;
+    info.extensions = libwebsocket_get_internal_extensions();
+    info.ssl_cert_filepath = NULL;
+    info.ssl_private_key_filepath = NULL;
+    info.gid = -1;
+    info.uid = -1;
+    info.options = 0;
     
+    struct libwebsocket_context *context;
     // create libwebsocket context representing this server
-    context = libwebsocket_create_context(port, interface, protocols,
-                                          libwebsocket_internal_extensions,
-                                          cert_path, key_path, ca_path, -1, -1, opts);
+    context = libwebsocket_create_context(&info);
     
     if (context == NULL) {
         fprintf(stderr, "libwebsocket init failed\n");
@@ -234,7 +235,6 @@ int main(int argc, char *argv[]) {
         else{
             read_for_send();
         }
-
 
         //If we got a connected client
         //Send we send him the random numbers each 100ms

@@ -1,6 +1,7 @@
 *.log
 *.csv
 *.ods
+*.o
 test_psi
 librdrand_linux
 c/random-generator-avalanche.net/
