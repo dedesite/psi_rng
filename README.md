@@ -21,7 +21,7 @@ I will also create new kinds of experiments, more on this later...
 
 ## Raspberry (C) code
 
-I now use a raspberry pi as a Random Number Generator **and** a websockets server (using libwebsocket).
+I now use a raspberry pi as a Random Number Generator **and** a websockets server (using [libwebsockets](https://github.com/warmcat/libwebsockets)).
 Code that read the random frequency stream and transform it to a random bit stream.
 
 Code espacially made to be run on slow configuration with few RAM and little CPU like raspberry.

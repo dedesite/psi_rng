@@ -43,7 +43,7 @@ app.get('/peoch_results.json', function(req, res){
 });
 
 app.get('/*', function (req, res) {
-	res.sendfile(__dirname + req.originalUrl);
+	res.sendfile(__dirname + "/" + req.params[0]);
 });
 
 var port = 3001;
