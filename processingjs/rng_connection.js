@@ -7,7 +7,8 @@ document.onreadystatechange = function () {
     //var address = 'ws://192.168.1.13:8080';
     var address = "ws://psi.chickenkiller.com:8080";
     if(window.location.hostname == "localhost"){
-      address = "ws://192.168.1.13:8080";
+      //address = "ws://192.168.1.13:8080";
+      address = "ws://localhost:8080";
     }
     var socket = new WebSocket(address, 'rng-protocol');
     window.socket = socket;
