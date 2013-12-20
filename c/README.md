@@ -7,30 +7,20 @@ Some usefull information on how to compile and configure a project for libwebsoc
 
 Here is what I did on my Ubuntu 11.10 & 12.10 machines and my raspberry pi :
 
-    # I now use a fork of the libwebsockets library which seems to be more activelly developed
-    # git clone git://git.warmcat.com/libwebsockets
-    git clone git://github.com/davidgaleano/libwebsockets.git
+    git clone git://github.com/warmcat/libwebsockets.git
     cd libwebsockets
-    ./configure
-    make clean
+    mkdir build
+    cd build
+    cmake ..
     make
     sudo make install
     sudo ln -s /usr/local/lib/libwebsockets.so /usr/lib/libwebsockets.so.0
 
-## Building the websockets server
+## Building the websockets server and the rng
 
 Then cd to the 'c' directory and specify libwebsocket location for compilation :
 
-    gcc -Wall -O rng_server.c -o rng_server /usr/local/lib/libwebsockets.so
-
-## Building the rng (Random Number Generator)
-
-    gcc -Wall -O rng.c -o rng
-
-Note : if you want to use the raspberry GPIO, you will have to uncomment RASPBERRY define before compiling
-
-    //#define RASPBERRY 1
-
+    make
 
 # Launch everything
 
