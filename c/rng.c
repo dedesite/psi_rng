@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "daemonize.h"
 #include "fifo.h"
@@ -35,6 +36,8 @@
 #define SLEEP_INTERVAL 500
 //In milliseconds
 #define SAMPLE_DURATION 100
+
+static volatile sig_atomic_t keep_going = 1;
 
 void build_byte(uint32_t bit, uint32_t position, uint8_t *samples){
     //We store numbers as bytes
@@ -68,6 +71,10 @@ void send_numbers(uint8_t *samples, uint32_t len){
     }
 }
 
+void signal_handler(int sig)
+{
+    keep_going = 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -77,13 +84,15 @@ int main(int argc, char *argv[])
     uint32_t nb_bytes_samples = nb_bits_samples / 8;
     uint8_t samples[nb_bytes_samples];
 
+    signal(SIGINT, signal_handler);
+
     if(argc > 1 && strcmp(argv[1], "-d") == 0)
         daemonize();
 
     create_fifo_and_wait("Waiting for server to start...", "Server started : could start Random numbers generation.");
 
     qrand_setup();
-    while (1) 
+    while (keep_going)
     {
         for (i = 0; i < nb_bits_samples; i++) 
         {
