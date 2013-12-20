@@ -5,7 +5,7 @@
 
 #define FIFO_FILE "/tmp/.rng_fifo"
 
-void create_fifo_and_wait(char* wait_msg, char* open_msg)
+void create_fifo_and_wait(char* mode, char* wait_msg, char* open_msg)
 {
     FILE *fp;
 
@@ -14,7 +14,7 @@ void create_fifo_and_wait(char* wait_msg, char* open_msg)
     mkfifo(FIFO_FILE, 0666);
 
     printf("%s\n", wait_msg);
-    fp = fopen(FIFO_FILE, "w");
+    fp = fopen(FIFO_FILE, mode);
     if (fp) {
         printf("%s\n", open_msg);
         fclose(fp);

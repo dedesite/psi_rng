@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     if(argc > 1 && strcmp(argv[1], "-d") == 0)
         daemonize();
 
-    create_fifo_and_wait("Waiting for server to start...", "Server started : could start Random numbers generation.");
+    create_fifo_and_wait("w", "Waiting for server to start...", "Server started : could start Random numbers generation.");
 
     qrand_setup();
     while (keep_going)
