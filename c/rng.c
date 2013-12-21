@@ -69,7 +69,7 @@ uint32_t build_byte(uint32_t bit, uint8_t *samples)
 /*Exclusive XOR used by the PEAR to reduice bias*/
 uint32_t exclusive_or(uint32_t bit, uint8_t *samples)
 {
-  static uint8_t flip_flop = 0;
+  static uint32_t flip_flop = 0;
   flip_flop = !flip_flop;
   return build_byte(flip_flop ^ bit, samples);
 }
@@ -79,12 +79,18 @@ rate of number generation.
  */
 uint32_t von_neumann(uint32_t bit, uint8_t *samples)
 {
-  static uint8_t previous = 0;
+  static uint32_t previous = 0;
+  static uint32_t flip_flop = 0;
   uint32_t nb_bytes = 0;
 
-  if(previous != bit)
+  flip_flop = !flip_flop;
+
+  if(flip_flop)
   {
-    nb_bytes = build_byte(previous, samples);
+      if(previous != bit)
+      {
+        nb_bytes = build_byte(previous, samples);
+      }
   }
   previous = bit;
   return nb_bytes;
@@ -135,7 +141,7 @@ int main(int argc, char *argv[])
         for (i = 0; i < nb_bits_samples; i++) 
         {
             bit = qrand();
-            nb_bytes = von_neumann(bit, (uint8_t*)&samples);
+            nb_bytes = exclusive_or(bit, (uint8_t*)&samples);
             if(nb_bytes >= nb_bytes_samples)
             {
                 send_numbers((uint8_t*)&samples, nb_bytes_samples);
