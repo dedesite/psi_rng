@@ -37,46 +37,57 @@
 //In milliseconds
 #define SAMPLE_DURATION 100
 
+#define NB_BITS_SAMPLES (SAMPLE_DURATION * 1000) / SLEEP_INTERVAL
+
 static volatile sig_atomic_t keep_going = 1;
 
 
-void build_byte(uint32_t bit, uint32_t position, uint8_t *samples)
+uint32_t build_byte(uint32_t bit, uint8_t *samples)
 {
     //We store numbers as bytes
     static uint8_t current_number = 0;
+    static uint32_t bit_position = 0;
+    static uint32_t nb_bytes = 0;
     //We build an uint8 number with random bits
     if(bit)
         current_number = (current_number << 1) | 0x01;
     else
         current_number = (current_number << 1);
-
-    if((position+1) % 8 == 0)
+    bit_position++;
+    if(nb_bytes >= NB_BITS_SAMPLES / 8)
+        nb_bytes = 0;
+    if(bit_position == 8)
     {
-        samples[(position+1) / 8] = current_number;
+        samples[nb_bytes] = current_number;
+        bit_position = 0;
         current_number=0;
+        nb_bytes++;
     }
+    return nb_bytes;
 }
 
 /*Exclusive XOR used by the PEAR to reduice bias*/
-void exclusive_or(uint32_t bit, uint32_t position, uint8_t *samples)
+uint32_t exclusive_or(uint32_t bit, uint8_t *samples)
 {
   static uint8_t flip_flop = 0;
   flip_flop = !flip_flop;
-  build_byte(flip_flop ^ bit, position, samples);
+  return build_byte(flip_flop ^ bit, samples);
 }
 
 /*Another algorithm to reduice biais, used by Giorgio Vazzana but reduice the 
 rate of number generation.
  */
-void von_neumann(uint32_t bit, uint32_t position, uint8_t *samples)
+uint32_t von_neumann(uint32_t bit, uint8_t *samples)
 {
   static uint8_t previous = 0;
+  uint32_t nb_bytes = 0;
 
   if(previous != bit)
   {
-    build_byte(previous, position, samples);
+    nb_bytes = build_byte(previous, samples);
   }
   previous = bit;
+  return nb_bytes;
 }
 
 /*Send numbers to the websocket server through a fifo*/
@@ -106,8 +117,9 @@ int main(int argc, char *argv[])
 {
     uint32_t bit;
     uint32_t i;
-    uint32_t nb_bits_samples = (SAMPLE_DURATION * 1000) / SLEEP_INTERVAL;
+    uint32_t nb_bits_samples = NB_BITS_SAMPLES;
     uint32_t nb_bytes_samples = nb_bits_samples / 8;
+    uint32_t nb_bytes = 0;
     uint8_t samples[nb_bytes_samples];
 
     signal(SIGINT, signal_handler);
@@ -123,10 +135,13 @@ int main(int argc, char *argv[])
         for (i = 0; i < nb_bits_samples; i++) 
         {
             bit = qrand();
-            exclusive_or(bit, i, (uint8_t*)&samples);
+            nb_bytes = von_neumann(bit, (uint8_t*)&samples);
+            if(nb_bytes >= nb_bytes_samples)
+            {
+                send_numbers((uint8_t*)&samples, nb_bytes_samples);
+            }
             usleep(SLEEP_INTERVAL);
         }
-        send_numbers((uint8_t*)&samples, nb_bytes_samples);
     }
     qrand_close();
     return 0;
