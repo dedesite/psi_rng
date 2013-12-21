@@ -40,7 +40,8 @@
 static volatile sig_atomic_t keep_going = 1;
 
 
-void build_byte(uint32_t bit, uint32_t position, uint8_t *samples){
+void build_byte(uint32_t bit, uint32_t position, uint8_t *samples)
+{
     //We store numbers as bytes
     static uint8_t current_number = 0;
     //We build an uint8 number with random bits
@@ -49,14 +50,16 @@ void build_byte(uint32_t bit, uint32_t position, uint8_t *samples){
     else
         current_number = (current_number << 1);
 
-    if((position+1) % 8 == 0){
+    if((position+1) % 8 == 0)
+    {
         samples[(position+1) / 8] = current_number;
         current_number=0;
     }
 }
 
 /*Exclusive XOR used by the PEAR to reduice bias*/
-void exclusive_or(uint32_t bit, uint32_t position, uint8_t *samples){
+void exclusive_or(uint32_t bit, uint32_t position, uint8_t *samples)
+{
   static uint8_t flip_flop = 0;
   flip_flop = !flip_flop;
   build_byte(flip_flop ^ bit, position, samples);
@@ -65,7 +68,8 @@ void exclusive_or(uint32_t bit, uint32_t position, uint8_t *samples){
 /*Another algorithm to reduice biais, used by Giorgio Vazzana but reduice the 
 rate of number generation.
  */
-void von_neumann(uint32_t bit, uint32_t position, uint8_t *samples){
+void von_neumann(uint32_t bit, uint32_t position, uint8_t *samples)
+{
   static uint8_t previous = 0;
 
   if(previous != bit)
@@ -76,7 +80,8 @@ void von_neumann(uint32_t bit, uint32_t position, uint8_t *samples){
 }
 
 /*Send numbers to the websocket server through a fifo*/
-void send_numbers(uint8_t *samples, uint32_t len){
+void send_numbers(uint8_t *samples, uint32_t len)
+{
     FILE *fp;
 
     fp = fopen(FIFO_FILE, "wb");
