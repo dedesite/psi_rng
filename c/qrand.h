@@ -7,6 +7,11 @@
 #endif
 
 #ifdef RASPBERRY
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
 // GPIO Avalanche input
 #define AVALANCHE_IN  4
 #define LED           9
