@@ -91,7 +91,7 @@ static int callback_rngtest(struct libwebsocket_context * this,
  Read the fifo file where random numbers are written and then convert them to a json array
  which can be easilly read in javascript.
 */
-static void read_random_numbers(unsigned char* numbers_array)
+static size_t read_random_numbers(unsigned char* numbers_array)
 {
     size_t file_size = 0;
     FILE *fp = fopen(FIFO_FILE, "rb");
@@ -110,17 +110,18 @@ static void read_random_numbers(unsigned char* numbers_array)
         perror("error opening fifo");
         exit(1);
     }
+    return file_size;
 }
 
-static void read_for_send(unsigned char *numbers)
+static size_t read_for_send(unsigned char *numbers)
 {
-    read_random_numbers(&numbers[LWS_SEND_BUFFER_PRE_PADDING]);
+    return read_random_numbers(&numbers[LWS_SEND_BUFFER_PRE_PADDING]);
 }
 
-static void send_random_numbers(struct libwebsocket *wsi, unsigned char *numbers)
+static void send_random_numbers(struct libwebsocket *wsi, unsigned char *numbers, size_t len)
 {
     //attention a bien avoir la taille du tableau et a ne pas faire de malloc sur le buffer a chaque fois...
-    libwebsocket_write(wsi, &numbers[LWS_SEND_BUFFER_PRE_PADDING], file_size, LWS_WRITE_BINARY);
+    libwebsocket_write(wsi, &numbers[LWS_SEND_BUFFER_PRE_PADDING], len, LWS_WRITE_BINARY);
 }
 
 static void read_for_test(int current_sample_ind, unsigned char *numbers_to_test){
@@ -183,6 +184,7 @@ int main(int argc, char *argv[]) {
     unsigned char numbers[LWS_SEND_BUFFER_PRE_PADDING + MAX_NUMBER_PER_READ + LWS_SEND_BUFFER_POST_PADDING];
     //Cumulate 20000 bits for test
     unsigned char numbers_to_test[MAX_NUMBER_PER_READ*NUM_SAMPLE_TO_TEST];
+    size_t len = 0;
     if(argc > 2 && strcmp(argv[1], "-d") == 0)
         daemonize();
 
@@ -223,7 +225,7 @@ int main(int argc, char *argv[]) {
             current_sample_ind++;
         }
         else{
-            read_for_send((unsigned char*)&numbers);
+            len = read_for_send((unsigned char*)&numbers);
         }
 
         //If we got a connected client
@@ -236,7 +238,7 @@ int main(int argc, char *argv[]) {
                     test_random_numbers(connected_client, (unsigned char*)&numbers_to_test);
             }
             else
-                send_random_numbers(connected_client, (unsigned char*)&numbers);
+                send_random_numbers(connected_client, (unsigned char*)&numbers, len);
         }
 
         if(current_sample_ind >= NUM_SAMPLE_TO_TEST-1)
