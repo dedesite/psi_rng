@@ -1,0 +1,20 @@
+static final int stats_intervale = 1000;
+int lastStatsTime = millis();
+void setup() {
+  rng = new Rng(100, 0);
+  rng.record_result = false;
+  window.record_result = false;
+  XpMgr.start_experiment();
+}
+
+void xp_loop(){	
+  rng.record_result = window.record_result;
+  int elapsedTime = millis();
+  int delta = elapsedTime - lastStatsTime;
+  if(delta >= stats_intervale){
+  	lastStatsTime = elapsedTime;
+  	if(rng.record_result){
+  		rng.send_xp_results("pk_p");	
+  	}
+  }
+}

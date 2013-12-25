@@ -26,7 +26,6 @@
             recieved_data[key].forEach(function(element, index, array) {
               nb_ones += element;
               element - 100 > 0 ? plus += element - 100 : moins += element - 100;
-              
             });
             console.log("Nb flips : ", max_size * 200, " Nb ones : ", nb_ones, "Ratio : ", nb_ones/(max_size*200));
             console.log("On : ", max_size, " trials, ", plus, " where > to 0 and ", moins, "where < to 0");
