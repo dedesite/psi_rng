@@ -5,6 +5,7 @@
 #Don't understand why NoCache isn't working...
 #require "rack/nocache"
 require "rack/coffee"
+require __DIR__('../rack/coffee')
 
 Ramaze.middleware :spec do |mode|
   puts "Middlewares for spec"
@@ -18,7 +19,7 @@ Ramaze.middleware :spec do |mode|
   mode.use Rack::Head
   mode.use Rack::Coffee,
     :root => "#{Dir.pwd}/public",
-    :urls => '/js'
+    :urls => ['/js', '/js/spec']
 end
 
 Ramaze.middleware :dev do |mode|
@@ -34,7 +35,7 @@ Ramaze.middleware :dev do |mode|
   #mode.use Rack::NoCache
   mode.use Rack::Coffee,
     :root => "#{Dir.pwd}/public",
-    :urls => '/js'
+    :urls => ['/js', '/js/spec']
   mode.use Ramaze::Reloader
   mode.run Ramaze::AppMap
 end

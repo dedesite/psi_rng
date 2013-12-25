@@ -12,7 +12,10 @@
   ],
   "dependencies": {
     "bootstrap-css" : "3.x",
-    "jquery" : ">=1.9.0"
+    "jquery" : ">=1.9.0",
+    "mocha" : "",
+    "expect" : "",
+    "should" : ""
   },
   "license": "GPL V3",
   "private": true,

@@ -18,3 +18,4 @@ processingjs/node_modules/
 articles/*.pdf
 site/Gemfile.lock
 site/public/vendor/
+site/public/source_maps/
