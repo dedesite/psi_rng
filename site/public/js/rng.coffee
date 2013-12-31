@@ -2,13 +2,20 @@ class Rng
   constructor: (@address, @port) ->
     @socket = new WebSocket("ws://#{@address}:#{@port}", 'rng-protocol')
     @socket.binaryType = 'arraybuffer'
-    @socket.onmessage = @onNumbers
-    @firstTime = true
+    @socket.onmessage = @_onNumbers
+    @randomNumbers = []
+    console.log 'here'
+    @numbersCb = false 
 
   isConnected: ->
     @socket.readyState is 1
 
-  onNumbers: ->
-    console.log "numbers" if @firstTime
-    @firstTime = false
+  onNumbers: (callback) ->
+    @numbersCb = callback
+
+  _onNumbers: (message) =>
+    console.log('yo', this) if @randomNumbers.length is 0
+    numbers = new Uint8Array(message.data)
+    @randomNumbers.push(numbers)
+    @numbersCb(numbers) if @numbersCb
 window.Rng = Rng

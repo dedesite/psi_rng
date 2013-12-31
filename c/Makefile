@@ -1,6 +1,6 @@
 CC = gcc
 RM = rm -f
-CFLAGS = -Wall -Wextra -O
+CFLAGS = -Wall -O
 LDFLAGS = -lwebsockets
 NAME = rng
 SERVER = $(NAME)_server
