@@ -45,6 +45,8 @@ class Rng{
   ArrayList byte_pool;
 
   boolean first_connection = true;
+
+  boolean record_result = true;
   
   Rng(int pool_size, int nb_sample){
     min_pool_size = pool_size;
@@ -247,7 +249,9 @@ class Rng{
     byte b = byte(num);
     for (int i = 0; i < 8; i++) {
       boolean bit = bit_at(b, i);
-      manage_xp_results(bit);
+      if(record_result){
+        manage_xp_results(bit);  
+      }
       current_nb_ones += int(bit);
       current_nb_flips++;
       fill_boolean_pool(bit);

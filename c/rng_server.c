@@ -16,8 +16,8 @@ https://gist.github.com/3654228
 
 #include "daemonize.h"
 #include "popenRWE.h"
+#include "fifo.h"
 
-#define FIFO_FILE "/tmp/.rng_fifo"
 //We sample the chaos 2000 times per second which mean 250bytes / sec
 //and the numbers are send each 100ms so we send 25 bytes each time
 #define MAX_NUMBER_PER_READ 25
@@ -70,9 +70,8 @@ static int callback_rng(struct libwebsocket_context * this,
 {
 
     bool new_connection = manage_connection(wsi, reason);
-    if(new_connection){
+    if(new_connection)
         test_protocol = false;
-    }
     return 0;
 }
 
@@ -92,45 +91,45 @@ static int callback_rngtest(struct libwebsocket_context * this,
  Read the fifo file where random numbers are written and then convert them to a json array
  which can be easilly read in javascript.
 */
-size_t file_size = 0;
-static void read_random_numbers(unsigned char* numbers_array){
+static size_t read_random_numbers(unsigned char* numbers_array)
+{
+    size_t file_size = 0;
     FILE *fp = fopen(FIFO_FILE, "rb");
-    if (fp) {
+    if (fp) 
+    {
         file_size = fread(numbers_array, 1, MAX_NUMBER_PER_READ, fp);
-        if(file_size < MAX_NUMBER_PER_READ){
+        if(file_size < MAX_NUMBER_PER_READ)
             printf("We've got not enough numbers : %zu instead of %d\n", file_size, MAX_NUMBER_PER_READ);
-        }
         //printf("Recieving numbers = %s\n", numbers);
         fclose(fp);
         //We sleep a bit to avoid reading while the RNG is writing
         usleep(2000);
     }
-    else {
+    else 
+    {
         perror("error opening fifo");
         exit(1);
     }
+    return file_size;
 }
 
-unsigned char numbers[LWS_SEND_BUFFER_PRE_PADDING + MAX_NUMBER_PER_READ + LWS_SEND_BUFFER_POST_PADDING];
-static void read_for_send(){
-    read_random_numbers(&numbers[LWS_SEND_BUFFER_PRE_PADDING]);
+static size_t read_for_send(unsigned char *numbers)
+{
+    return read_random_numbers(&numbers[LWS_SEND_BUFFER_PRE_PADDING]);
 }
 
-static void send_random_numbers(struct libwebsocket *wsi){
+static void send_random_numbers(struct libwebsocket *wsi, unsigned char *numbers, size_t len)
+{
     //attention a bien avoir la taille du tableau et a ne pas faire de malloc sur le buffer a chaque fois...
-    libwebsocket_write(wsi, &numbers[LWS_SEND_BUFFER_PRE_PADDING], file_size, LWS_WRITE_BINARY);
+    libwebsocket_write(wsi, &numbers[LWS_SEND_BUFFER_PRE_PADDING], len, LWS_WRITE_BINARY);
 }
 
-int current_sample_ind = 0;
-//Cumulate 20000 bits for test
-unsigned char numbers_to_test[MAX_NUMBER_PER_READ*NUM_SAMPLE_TO_TEST];
-static void read_for_test(){
+static void read_for_test(int current_sample_ind, unsigned char *numbers_to_test){
     read_random_numbers(&numbers_to_test[current_sample_ind*MAX_NUMBER_PER_READ]);
-    current_sample_ind++;
 }
 
 //Call rngtest with the 20000 bits and send the result
-static void test_random_numbers(struct libwebsocket *wsi){
+static void test_random_numbers(struct libwebsocket *wsi, unsigned char *numbers_to_test){
     //open the rngtest process
     //FILE *fp = popen("rngtest", "w");
     int pipe[3];
@@ -181,9 +180,13 @@ static struct libwebsocket_protocols protocols[] = {
 };
 
 int main(int argc, char *argv[]) {
-    if(argc > 2 && strcmp(argv[1], "-d") == 0){
+    int current_sample_ind = 0;
+    unsigned char numbers[LWS_SEND_BUFFER_PRE_PADDING + MAX_NUMBER_PER_READ + LWS_SEND_BUFFER_POST_PADDING];
+    //Cumulate 20000 bits for test
+    unsigned char numbers_to_test[MAX_NUMBER_PER_READ*NUM_SAMPLE_TO_TEST];
+    size_t len = 0;
+    if(argc > 2 && strcmp(argv[1], "-d") == 0)
         daemonize();
-    }
 
     // server url will be http://localhost:8080
     struct lws_context_creation_info info;
@@ -207,21 +210,9 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    /* Create the FIFO if it does not exist */
-    umask(0);
-    mkfifo(FIFO_FILE, 0666);
-    
-    printf("Waiting for Random Numbers Generator to start sending numbers...\n");
-    FILE *fp = fopen(FIFO_FILE, "r");
-    if (fp) {
-        printf("Random Numbers Generator started : starting websocket server.\n");
-        fclose(fp);
-    }
-    else {
-        perror("error opening fifo");
-        exit(1);
-    }
-    
+    create_fifo_and_wait("r", "Waiting for Random Numbers Generator to start sending numbers...", 
+        "Random Numbers Generator started : starting websocket server.");
+
     // infinite loop, to end this server send SIGTERM. (CTRL+C)
     while (1) {
         //There is 0ms sleep in the service
@@ -230,28 +221,28 @@ int main(int argc, char *argv[]) {
         libwebsocket_service(context, 0);
 
         if(test_protocol){
-            read_for_test();
+            read_for_test(current_sample_ind, (unsigned char*)&numbers_to_test);
+            current_sample_ind++;
         }
         else{
-            read_for_send();
+            len = read_for_send((unsigned char*)&numbers);
         }
 
         //If we got a connected client
         //Send we send him the random numbers each 100ms
-        if(connected_client){
-            if(test_protocol){
-                if(current_sample_ind >= NUM_SAMPLE_TO_TEST-1){
-                    test_random_numbers(connected_client);
-                }
+        if(connected_client)
+        {
+            if(test_protocol)
+            {
+                if(current_sample_ind >= NUM_SAMPLE_TO_TEST-1)
+                    test_random_numbers(connected_client, (unsigned char*)&numbers_to_test);
             }
-            else{
-                send_random_numbers(connected_client);
-            }
+            else
+                send_random_numbers(connected_client, (unsigned char*)&numbers, len);
         }
 
-        if(current_sample_ind >= NUM_SAMPLE_TO_TEST-1){
+        if(current_sample_ind >= NUM_SAMPLE_TO_TEST-1)
             current_sample_ind = 0;
-        }
     }
     
     libwebsocket_context_destroy(context);

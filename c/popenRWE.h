@@ -13,6 +13,8 @@
  * execution it can then write to element 0 (stdin of exe), and read from
  * element 1 (stdout) and 2 (stderr).
  */
+#ifndef _POWER_RWE
+ #define _POWER_RWE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,4 +99,4 @@ int pcloseRWE(int pid, int *rwepipe)
 	}
 	return status;
 }
-
+#endif /*_POWER_RWE*/

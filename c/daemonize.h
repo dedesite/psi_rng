@@ -1,3 +1,8 @@
+#ifndef _DAEMONIZE
+#define _DAEMONIZE
+
+#include <sys/stat.h>
+
 static void 
 daemonize(void)
 {
@@ -43,3 +48,4 @@ daemonize(void)
   f = freopen( "/dev/null", "w", stderr);
   if(f == NULL) exit(EXIT_FAILURE);
 }
+#endif /*_DAEMONIZE*/

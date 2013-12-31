@@ -9,8 +9,13 @@ c/random-generator-avalanche.net
 c/avalanche-test-utils/
 c/rng
 c/rng_server
+processing/
 processing/robot_hazard/data/
 processing/robot_hazard/videos/
-processing/the_nineties/
+processingjs/the_nineties/
+processingjs/backup/
 processingjs/node_modules/
 articles/*.pdf
+site/Gemfile.lock
+site/public/vendor/
+site/public/source_maps/
