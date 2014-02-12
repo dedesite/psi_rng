@@ -15,7 +15,8 @@ Here is what I did on my Ubuntu 11.10 & 12.10 machines and my raspberry pi :
     make
     sudo make install
     sudo ln -s /usr/local/lib/libwebsockets.so /usr/lib/libwebsockets.so.0
-
+    sudo ln -s /usr/local/lib/libwebsockets.so.4.0.0 /usr/lib/libwebsockets.so.4.0.0
+    
 ## Building the websockets server and the rng
 
 Then cd to the 'c' directory and specify libwebsocket location for compilation :
