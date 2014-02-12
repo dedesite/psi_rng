@@ -17,5 +17,5 @@ class Rng
     console.log('yo', this) if @randomNumbers.length is 0
     numbers = new Uint8Array(message.data)
     @randomNumbers.push(numbers)
-    @numbersCb(numbers) if @numbersCb
+    @numbersCb(numbers) if @numbersCb?
 window.Rng = Rng
