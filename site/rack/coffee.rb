@@ -19,8 +19,26 @@ module CoffeeScript
       options[:sourceMap] = true
       options[:filename]  = script_name.basename.to_s
 
-      ret = Source.context.call("CoffeeScript.compile", script, options)
-
+      begin
+        #Hack to retrieve line number in ExecJS errors
+        #Based on this patch : https://github.com/josh/ruby-coffee-script/pull/21/
+        wrapper = <<-WRAPPER
+          (function(script, options) {
+            try {
+              return CoffeeScript.compile(script, options);
+            } catch (err) {
+              if (err instanceof SyntaxError && err.location) {
+                throw new SyntaxError([options.filename, err.location.first_line + 1, err.location.first_column + 1].join(":") + ": " + err.message)
+              } else {
+                throw err;
+              }
+            }
+          })
+        WRAPPER
+        ret = Source.context.call(wrapper, script, options)
+      rescue Exception => e
+        ret = {"js" => "console.error('#{e.message}');", "v3SourceMap" => '{"version" : 3, "sources" : []}'}
+      end
       map_dir = Pathname.new(File.join(Dir.pwd, "public/source_maps"))
       map_dir.mkpath
 
@@ -29,7 +47,8 @@ module CoffeeScript
       coffee_file = map_dir.join "#{basename}.coffee"
 
       # workaround for missing filename
-      source_map = JSON.load(ret["v3SourceMap"])
+      sm = ret["v3SourceMap"]
+      source_map = JSON.load(sm)
       source_map["sources"][0] = options[:filename]
 
       coffee_file.open('w') {|f| f.puts script }

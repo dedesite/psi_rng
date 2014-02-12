@@ -5,17 +5,21 @@ describe 'Rng', ->
       test = ->
         rng.isConnected().should.not.be.ok
         done()  
-      setTimeout(test, 200)
+      setTimeout(test, 300)
     it 'should be connected with good address', (done) ->
       rng = new Rng('localhost', 8080)
       test = ->
         rng.isConnected().should.be.ok
         done()  
-      setTimeout(test, 200)
+      setTimeout(test, 300)
     it 'should call onNumbers callback with numbers', (done) ->
       rng = new Rng('localhost', 8080)
       rng.onNumbers((numbers)-> 
-        numbers.length.should.be.instanceof(Uint8Array).and.have.lengthOf(25)
+        rng.socket.close()
+        numbers.should.be.instanceof(Uint8Array).and.have.lengthOf(25)
         done()
         )
-      console.log rng.numbersCb
+    it 'should detect bad numbers', ->
+      a = 1
+      a.should.be.ok
+    it 'should not be ready until it reach 100 numbers'
