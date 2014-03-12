@@ -8,3 +8,4 @@ Some students, interested in this domain came to work on the project.
 
 - [Andreas Livet](https://github.com/dedesite)
 - [Guillaume Besson](https://github.com/geekuillaume)
+- [Joseph Blanchard](https://github.com/djothefou)
