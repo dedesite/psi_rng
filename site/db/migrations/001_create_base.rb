@@ -38,6 +38,6 @@ Sequel.migration do
     drop_table(:user)
     drop_table(:xp)
     drop_table(:rng)
-    drop_table(:xp_user)
+    drop_table(:user_xp)
   end
 end
